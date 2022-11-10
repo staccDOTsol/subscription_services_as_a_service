@@ -188,7 +188,6 @@ const Home: NextPage = () => {
       let env = 'mainnet-beta'
       let hehe2 = (await uploadFile(nft)).hehe
       console.log(hehe2)
-      hehe2.sellerFeeBasisPoints = hehe2.seller_fee_basis_points
       try {
      for (var creator of hehe2.creators){
       creator.address = new PublicKey(creator.address)

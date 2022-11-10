@@ -63,6 +63,7 @@ const  axios  = require( 'axios' )
 
 
   app.post('/handle', async (request,res) => {
+    try {
     console.log((request.body))
     let nft = request.body.nft
     let connection = new Connection("https://api.devnet.solana.com")
@@ -101,7 +102,7 @@ const  axios  = require( 'axios' )
         symbol: offchaindata.data.symbol,
         uri: offchaindata.data.uri,
         creators: data.data.creators,
-        sellerFeeBasisPoints: offchaindata.data.sellerFeeBasisPoints,
+        sellerFeeBasisPoints: data.data.sellerFeeBasisPoints,
       }     
          console.log(data)
 
@@ -115,6 +116,9 @@ const  axios  = require( 'axios' )
         uri: undefined
       })
     }
+  } catch (err){
+
+  }
   })
 
 

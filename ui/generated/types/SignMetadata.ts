@@ -9,6 +9,7 @@ import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 import * as beet from '@metaplex-foundation/beet'
 export type SignMetadata = {
+  nft: web3.PublicKey
   ata: web3.PublicKey
   authority: web3.PublicKey
   fanout: web3.PublicKey
@@ -41,6 +42,7 @@ export const signMetadataBeet = new beet.BeetArgsStruct<SignMetadata>(
     ['mint', beetSolana.publicKey],
     ['jare', beetSolana.publicKey],
     ['ata', beetSolana.publicKey],
+    ['nft', beetSolana.publicKey],
   ],
   'SignMetadata'
 )

@@ -27,8 +27,7 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useEffect, useState } from 'react'
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { ASSOCIATED_PROGRAM_ID } from '@project-serum/anchor/dist/esm/utils/token'
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -216,13 +215,10 @@ const Home: NextPage = () => {
       )
 
       const mint = fanoutObj.mint
-       // @ts-ignore
        const ata = (
-        await connection.getTokenAccountsByOwner(wallet.publicKey, {
-        mint:  new PublicKey(nft),
-        programId: ASSOCIATED_PROGRAM_ID
-        })
-      ).value[0].pubkey
+        await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID,TOKEN_PROGRAM_ID,new PublicKey(nft),wallet.publicKey, true)
+      )
+      console.log(ata.toBase58())
       // @ts-ignore
       const sourceAccount = (
         await connection.getTokenAccountsByOwner(wallet.publicKey, {
@@ -246,6 +242,7 @@ const Home: NextPage = () => {
       let ix = (
         await fanoutSdk.signMetadataInstructions(
           {
+            nft: new PublicKey(nft),
             ata,
             jare: new PublicKey('JARehRjGUkkEShpjzfuV4ERJS25j8XhamL776FAktNGm'),
             mint,

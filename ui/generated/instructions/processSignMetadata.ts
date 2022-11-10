@@ -64,6 +64,7 @@ export type ProcessSignMetadataInstructionAccounts = {
   mint: web3.PublicKey
   jare: web3.PublicKey
   ata: web3.PublicKey
+  nft: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -148,6 +149,11 @@ export function createProcessSignMetadataInstruction(
     },
     {
       pubkey: accounts.ata,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.nft,
       isWritable: false,
       isSigner: false,
     },

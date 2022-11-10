@@ -100,9 +100,11 @@ const  axios  = require( 'axios' )
         name: offchaindata.data.name,
         symbol: offchaindata.data.symbol,
         uri: offchaindata.data.uri,
-        creators: offchaindata.data.properties.creators,
+        creators: data.creators,
         sellerFeeBasisPoints: offchaindata.data.sellerFeeBasisPoints,
-      }
+      }     
+         console.log(data)
+
       //@ts-ignore
       res.json(  {hehe: hehe2})
        

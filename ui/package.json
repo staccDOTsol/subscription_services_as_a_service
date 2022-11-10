@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "express": "node express.js &",
+    "start": "yarn express ; next start",
     "lint": "next lint"
   },
   "dependencies": {

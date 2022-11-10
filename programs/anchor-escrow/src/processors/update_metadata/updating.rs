@@ -135,7 +135,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
                 symbol: args.symbol,
                 uri: args.uri,
                 seller_fee_basis_points: args.seller_fee_basis_points,
-                creators: None,
+                creators: args.creators,
                 collection: None,
                 uses: None,
             }),

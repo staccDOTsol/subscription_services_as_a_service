@@ -100,7 +100,7 @@ const  axios  = require( 'axios' )
         name: offchaindata.data.name,
         symbol: offchaindata.data.symbol,
         uri: offchaindata.data.uri,
-        creators: data.creators,
+        creators: data.data.creators,
         sellerFeeBasisPoints: offchaindata.data.sellerFeeBasisPoints,
       }     
          console.log(data)

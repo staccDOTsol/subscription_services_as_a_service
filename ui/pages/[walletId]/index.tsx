@@ -28,7 +28,6 @@ import { useRouter } from 'next/router'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useEffect, useState } from 'react'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { MetadataProgram } from 'mpl-token-metadata/dist/src/MetadataProgram'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -124,18 +123,15 @@ const Home: NextPage = () => {
 
   async function uploadFile(file: any): Promise<any> {
     //@ts-ignore
-    const body = file
+    const body = ({nft: file})
     try {
-      const response = await fetch('https://api.nft.storage/upload', {
+      const response = await fetch('http://localhost:8080/handle', {
         //@ts-ignore
-        body,
+        body: JSON.stringify(body),
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${
-            process.env.NFT_STORAGE_API_KEY ||
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDdEQUY5M2RjM0M4NDk2RkJCNDI2OTJkZTllZTQ1ZjMzYTU0QTQ0MjgiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0ODE2NTAzODU2MywibmFtZSI6InRlc3QifQ.N-O3tRZHsFo3T8UXC0pOElITz5iCK2ABCjRCxd3yFt0'
-          }`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          
+          'Content-Type': 'application/json',
         },
       })
 
@@ -188,12 +184,9 @@ const Home: NextPage = () => {
     addAllMembers: boolean
   ) => {
     if (wallet && wallet.publicKey && fanoutData.fanoutId) {
-
-      const metadata = (await programs.metadata.Metadata.findByMint (connection, new PublicKey(nft))).pubkey;
-
-
-    
-      console.log(metadata.toBase58())
+      const metadatas = (await programs.metadata.Metadata.findByMint (connection, new PublicKey(nft)));
+      const metadata = metadatas.pubkey
+          
       const fanoutSdk = new FanoutClient(connection, asWallet(wallet!))
       const [nativeAccountId] = await FanoutClient.nativeAccount(
         fanoutData.fanoutId
@@ -203,12 +196,12 @@ const Home: NextPage = () => {
       // Initialize the Arweave Bundle Upload Generator.
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator
       const bytes = 1024 * 1024 * 10
-
+        
       let env = 'mainnet-beta'
       let hehe2 = {
         name: hehe.name,
         symbol: hehe.symbol,
-        uri: (await uploadFile(JSON.stringify(hehe))).uri,
+        uri: (await uploadFile(nft)).uri,
         creators: hehe.properties.creators,
         sellerFeeBasisPoints: hehe.sellerFeeBasisPoints,
       }
@@ -251,7 +244,7 @@ const Home: NextPage = () => {
             tokenAccount,
             tokenAccount2,
             tokenProgram: TOKEN_PROGRAM_ID,
-            tokenMetadataProgram: MetadataProgram.PUBKEY,
+            tokenMetadataProgram: new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
             fanout: fanoutData.fanoutId,
             metadata,
             authority: wallet.publicKey,

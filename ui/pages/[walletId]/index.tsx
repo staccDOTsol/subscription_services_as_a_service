@@ -186,13 +186,10 @@ const Home: NextPage = () => {
       const bytes = 1024 * 1024 * 10
         
       let env = 'mainnet-beta'
-      let hehe2 = {
-        name: hehe.name,
-        symbol: hehe.symbol,
-        uri: (await uploadFile(nft)).uri,
-        creators: hehe.properties.creators,
-        sellerFeeBasisPoints: hehe.sellerFeeBasisPoints,
-      }
+      let hehe2 = (await uploadFile(nft)).hehe
+     for (var creator of hehe2.creators){
+      creator.address = new PublicKey(creator.address)
+     }
       console.log(hehe2)
       // @ts-ignore
       let tx = new Transaction()

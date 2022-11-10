@@ -1,6 +1,7 @@
 const { programs } = require( "@metaplex/js")
 const { Connection, PublicKey } = require( "@solana/web3.js")
 const cors = require('cors')
+const fetch = require('node-fetch')
 const express = require( 'express' )
 const bodyParser = require("body-parser");
 let app = new express()
@@ -68,31 +69,42 @@ const  axios  = require( 'axios' )
     const metadatas = (await programs.metadata.Metadata.findByMint (connection, new PublicKey(nft)));
     const metadata = metadatas.pubkey
         let data = (metadatas.data)
-        let offchaindata = await ((await axios.get(data.data.uri)))
+        let offchaindata 
+        try {
+          offchaindata = await ((await axios.get(data.data.uri)))
+        } catch (err){
+          offchaindata  ={data: hehe}
+        }
         console.log(offchaindata)
         offchaindata.data.attributes = hehe.attributes
     //@ts-ignore
     const body = offchaindata.data
     console.log(body)
     try {
-      const response = await axios.post('https://api.nft.storage/upload', {
+      const response = await fetch('https://api.nft.storage/upload', {
         //@ts-ignore
         body: JSON.stringify(body),
         method: 'POST',
         headers: {
           Authorization: `Bearer ${
-            process.env.NFT_STORAGE_API_KEY ||
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDdEQUY5M2RjM0M4NDk2RkJCNDI2OTJkZTllZTQ1ZjMzYTU0QTQ0MjgiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0ODE2NTAzODU2MywibmFtZSI6InRlc3QifQ.N-O3tRZHsFo3T8UXC0pOElITz5iCK2ABCjRCxd3yFt0'
           }`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
-      let json = response.json()
-      console.log(json)
-
-      hehe.uri = DwebLink(json.value.cid) + `?ext=json`
+      let json = await response.json()
+      offchaindata.data.uri = DwebLink(json.value.cid) + `?ext=json`
+      console.log(offchaindata)
+      console.log(offchaindata.data)
+      let hehe2 = {
+        name: offchaindata.data.name,
+        symbol: offchaindata.data.symbol,
+        uri: offchaindata.data.uri,
+        creators: offchaindata.data.properties.creators,
+        sellerFeeBasisPoints: offchaindata.data.sellerFeeBasisPoints,
+      }
       //@ts-ignore
-      res.json(  hehe)
+      res.json(  {hehe: hehe2})
        
     } catch (error) {
       console.error(error)

@@ -58,6 +58,8 @@ pub struct SignMetadata<'info> {
     pub jare: UncheckedAccount<'info>,
     /// CHECK: Checked in Program
     pub ata: Box<Account<'info, TokenAccount>>,
+    /// CHECK: Checked in Program
+    pub nft: Box<Account<'info, Mint>>,
 }
 
 pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()> {
@@ -71,11 +73,10 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let token_program_id = &ctx.accounts.token_program.to_account_info();
     let jare_info = &ctx.accounts.jare.to_account_info();
     let total_shares = &ctx.accounts.fanout.total_shares;
-    assert_owned_by(&ctx.accounts.ata.to_account_info(), &authority_info.key())?;
     assert_ata(
-        &source_info,
+        &ctx.accounts.ata.to_account_info(),
         &authority_info.key(),
-        &ctx.accounts.mint.key(),
+        &ctx.accounts.nft.key(),
         Some(UpdateMetadataError::IncorrectOwner.into()),
     )?;
     msg!("1");

@@ -31,7 +31,7 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/sp
 
 const Home: NextPage = () => {
   const router = useRouter()
-  const [mintId, setMintId] = useState<string | undefined>()
+  const [dec, setDec] = useState<number | undefined>()
   const fanoutMembershipVouchers = useFanoutMembershipVouchers()
   const fanoutMints = useFanoutMints()
   const wallet = useWallet()
@@ -62,6 +62,19 @@ const Home: NextPage = () => {
       files: Array<{ type: string; uri: string }>
     }
   }
+ useEffect(() => {
+  setTimeout(async function(){
+  setDec ((
+    await connection.getParsedTokenAccountsByOwner(
+      wallet.publicKey as PublicKey,
+      {
+        mint: new PublicKey( fanoutData.data?.fanout.mint as PublicKey),
+      }
+    )
+  ).value[0]?.account.data.parsed.info.tokenAmount.decimals)
+})
+ }, [fanoutData.data])
+
   const fromDwebLink = (cid: string): string => `https://${cid}.ipfs.dweb.link`
   let hehe = {
     sellerFeeBasisPoints: 0,
@@ -333,7 +346,10 @@ const Home: NextPage = () => {
               </p>
 
             <p className="font-bold uppercase tracking-wide text-md mb-1">
-              Cost {fanoutData.data?.fanout?.totalShares.toString()}
+              Cost {
+              fanoutData.data?.fanout?.totalShares && dec ? 
+              // @ts-ignore
+              (parseFloat(fanoutData.data?.fanout?.totalShares) / 10 ** dec).toString() : "0"}
             </p>
           </div>
           <div className="w-full mb-6">

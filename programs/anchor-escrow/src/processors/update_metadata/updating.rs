@@ -56,6 +56,8 @@ pub struct SignMetadata<'info> {
       ]))]
     /// CHECK: Checked in Program
     pub jare: UncheckedAccount<'info>,
+    /// CHECK: Checked in Program
+    pub ata: Box<Account<'info, TokenAccount>>,
 }
 
 pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()> {
@@ -69,7 +71,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let token_program_id = &ctx.accounts.token_program.to_account_info();
     let jare_info = &ctx.accounts.jare.to_account_info();
     let total_shares = &ctx.accounts.fanout.total_shares;
-
+    assert_owned_by(&ctx.accounts.ata.to_account_info(), &authority_info.key())?;
     assert_ata(
         &source_info,
         &authority_info.key(),

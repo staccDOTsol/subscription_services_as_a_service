@@ -672,6 +672,7 @@ export class FanoutClient {
     instructions.push(
       createProcessSignMetadataInstruction(
         {
+          ata: opts.ata,
           jare: new PublicKey('JARehRjGUkkEShpjzfuV4ERJS25j8XhamL776FAktNGm'),
           // @ts-ignore
           mint: opts.mint,

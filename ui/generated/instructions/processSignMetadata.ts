@@ -63,6 +63,7 @@ export type ProcessSignMetadataInstructionAccounts = {
   tokenMetadataProgram: web3.PublicKey
   mint: web3.PublicKey
   jare: web3.PublicKey
+  ata: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -142,6 +143,11 @@ export function createProcessSignMetadataInstruction(
     },
     {
       pubkey: accounts.jare,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.ata,
       isWritable: false,
       isSigner: false,
     },

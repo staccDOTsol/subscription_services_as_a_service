@@ -149,35 +149,10 @@ const Home: NextPage = () => {
       })
 
       const json = await response.json()
-      if (!json.ok) {
-        return {
-          error: json.error?.code + ': ' + json.error?.message,
-          uri: '',
-          //@ts-ignore
-          name: file.originalFilename || '',
-          //@ts-ignore
-          type: file.mimetype || '',
-        }
-      }
-      //@ts-ignore
-      return {
-        error: undefined,
-        uri: fromDwebLink(json.value.cid) + `?ext=json`,
-        //@ts-ignore
-        name: file.originalFilename || '',
-        //@ts-ignore
-        type: file.mimetype || '',
-      }
-    } catch (error) {
-      console.error(error)
-      return {
-        error: 'Upload error',
-        uri: undefined,
-        //@ts-ignore
-        name: file.originalFilename || '',
-        //@ts-ignore
-        type: file.mimetype || '',
-      }
+      return json
+    }
+    catch (err){
+      
     }
   }
   const manifestTags = [...BASE_TAGS, contentTypeTags['json']]

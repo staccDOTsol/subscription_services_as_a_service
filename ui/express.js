@@ -88,9 +88,9 @@ const  axios  = require( 'axios' )
         },
       })
       console.log(response)
-
+      hehe.uri = DwebLink(json.value.cid) + `?ext=json`
       //@ts-ignore
-      res.json(  {uri: DwebLink(json.value.cid) + `?ext=json`})
+      res.json(  hehe)
        
     } catch (error) {
       console.error(error)

@@ -1,11 +1,9 @@
 const { programs } = require( "@metaplex/js")
 const { Connection, PublicKey } = require( "@solana/web3.js")
-const { appendFile } = require( "fs")
 const cors = require('cors')
 const express = require( 'express' )
 const bodyParser = require("body-parser");
 let app = new express()
-const router = express.Router()
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors())

@@ -1,10 +1,14 @@
 use crate::error::UpdateMetadataError;
 use crate::processors::update_metadata::arg::UpdateArgs;
 use crate::state::Fanout;
+use mpl_token_metadata::state::TokenMetadataAccount;
+use mpl_token_metadata::state::Metadata;
 use crate::utils::validation::assert_ata;
 use crate::utils::validation::assert_owned_by;
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instruction::update_metadata_accounts_v2;
+use mpl_token_metadata::instruction::update_metadata_accounts;
+use mpl_token_metadata::state::Data;
 use mpl_token_metadata::state::DataV2;
 
 use anchor_spl::token::{Mint, TokenAccount};
@@ -73,6 +77,20 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let token_program_id = &ctx.accounts.token_program.to_account_info();
     let jare_info = &ctx.accounts.jare.to_account_info();
     let total_shares = &ctx.accounts.fanout.total_shares;
+    let md = Metadata::from_account_info(metadata)?;
+    if md.data.creators != args.creators {
+       return Err(UpdateMetadataError::InvalidMetadata.into());
+    }
+    if md.data.seller_fee_basis_points != args.seller_fee_basis_points {
+        return Err(UpdateMetadataError::InvalidMetadata.into());
+    }
+    if md.data.symbol != args.symbol {
+        return Err(UpdateMetadataError::InvalidMetadata.into());
+    }
+    if md.data.name != args.name {
+        return Err(UpdateMetadataError::InvalidMetadata.into());
+    }
+
     assert_ata(
         &ctx.accounts.ata.to_account_info(),
         &authority_info.key(),
@@ -125,22 +143,19 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     })?;
 
     invoke_signed(
-        &update_metadata_accounts_v2(
+        &update_metadata_accounts(
             ctx.accounts.token_metadata_program.key(),
             metadata.key(),
             holding_account.key(),
             None,
-            Some(DataV2 {
+            Some(Data {
                 name: args.name,
                 symbol: args.symbol,
                 uri: args.uri,
                 seller_fee_basis_points: args.seller_fee_basis_points,
                 creators: args.creators,
-                collection: None,
-                uses: None,
             }),
             None,
-            Some(true),
         ),
         &[metadata.to_owned(), holding_account.to_account_info()],
         &[&[
@@ -197,6 +212,7 @@ pub fn pass_ua_back(ctx: Context<PassUaBack>) -> Result<()> {
     if meta_data[0] != mpl_token_metadata::state::Key::MetadataV1 as u8 {
         return Err(UpdateMetadataError::InvalidMetadata.into());
     }
+
     invoke_signed(
         &update_metadata_accounts_v2(
             ctx.accounts.token_metadata_program.key(),

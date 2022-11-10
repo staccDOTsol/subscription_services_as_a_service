@@ -26,7 +26,6 @@ import {
   createProcessSignMetadataInstruction,
 } from './instructions'
 import { Fanout } from './accounts'
-import { MetadataProgram } from '@metaplex-foundation/mpl-token-metadata'
 import {
   BigInstructionResult,
   InstructionResult,
@@ -53,9 +52,6 @@ import {
   Creator,
   SignMetadata,
 } from './types'
-
-const MPL_TM_BUF = MetadataProgram.PUBKEY.toBuffer()
-const MPL_TM_PREFIX = 'metadata'
 
 export interface TransactionResult {
   RpcResponseAndContext: RpcResponseAndContext<SignatureResult>

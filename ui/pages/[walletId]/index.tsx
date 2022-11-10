@@ -1,32 +1,21 @@
 import { findAta, withFindOrInitAssociatedTokenAccount } from '@cardinal/common'
 import { DisplayAddress } from '@cardinal/namespaces-components'
 import { executeTransaction } from '@cardinal/staking'
-import {
-  Creator,
-  MetadataProgram,
-} from '@metaplex-foundation/mpl-token-metadata'
+import { programs } from "@metaplex/js"
+
 import { FanoutClient } from '../../generated'
 import { Fanout } from '../../generated/accounts'
-import { CreateAssociatedTokenAccount } from '@metaplex/js/lib/transactions'
-import { Wallet } from '@saberhq/solana-contrib'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
-  LAMPORTS_PER_SOL,
   PublicKey,
-  Signer,
-  TransactionInstruction,
 } from '@solana/web3.js'
 import { Transaction } from '@solana/web3.js'
 import { AsyncButton } from 'common/Button'
 import { Header } from 'common/Header'
-import { notify } from 'common/Notification'
 
-import { getMetadata } from '../../deprecated-clis/src/helpers/accounts'
 import {
-  getMintNaturalAmountFromDecimal,
   pubKeyUrl,
   shortPubKey,
-  tryPublicKey,
 } from 'common/utils'
 import { asWallet } from 'common/Wallets'
 import { paymentMintConfig } from 'config/paymentMintConfig'
@@ -38,9 +27,8 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useEffect, useState } from 'react'
-import { Data } from 'mpl-token-metadata/dist/src/generated'
-import { InstructionResult } from '@strata-foundation/spl-utils'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { MetadataProgram } from 'mpl-token-metadata/dist/src/MetadataProgram'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -50,30 +38,9 @@ const Home: NextPage = () => {
   const wallet = useWallet()
   const fanoutData = useFanoutData()
   const { connection, environment } = useEnvironmentCtx()
-  let selectedFanoutMint =
-    mintId && fanoutMints.data
-      ? fanoutMints.data.find((mint) => mint.data.mint.toString() === mintId)
-      : undefined
-  const fanoutMembershipMintVouchers = useFanoutMembershipMintVouchers(mintId)
-  const [voucherMapping, setVoucherMapping] = useState<{
-    [key: string]: string
-  }>({})
+
   const [nft, setNft]: any = useState('')
 
-  useEffect(() => {
-    const anchor = router.asPath.split('#')[1]
-    const fanoutMint = fanoutMints.data?.find(
-      (fanoutMint) =>
-        fanoutMint.config.symbol === anchor ||
-        fanoutMint.id.toString() === anchor
-    )
-    if (fanoutMint?.data.mint && fanoutMint?.data.mint.toString() !== mintId) {
-      selectSplToken(fanoutMint?.data.mint.toString())
-    }
-  }, [
-    router,
-    fanoutMints.data?.map((fanoutMint) => fanoutMint.id.toString()).join(','),
-  ])
   const BASE_TAGS = [{ name: 'App-Name', value: 'Metaplex Candy Machine' }]
 
   const contentTypeTags = {
@@ -88,37 +55,6 @@ const Home: NextPage = () => {
     ...BASE_TAGS,
     contentTypeTags['arweave-manifest'],
   ]
-  useEffect(() => {
-    const setMapping = async () => {
-      if (fanoutMembershipVouchers.data && selectedFanoutMint) {
-        let mapping: { [key: string]: string } = {}
-        for (const voucher of fanoutMembershipVouchers.data!) {
-          const [mintMembershipVoucher] =
-            await FanoutClient.mintMembershipVoucher(
-              selectedFanoutMint.id,
-              voucher.parsed.membershipKey,
-              new PublicKey(mintId!)
-            )
-          mapping[voucher.pubkey.toString()] = mintMembershipVoucher.toString()
-        }
-        setVoucherMapping(mapping)
-      } else {
-        setVoucherMapping({})
-      }
-    }
-    setMapping()
-  }, [fanoutMembershipVouchers.data, selectedFanoutMint, mintId])
-
-  const selectSplToken = (mintId: string) => {
-    setMintId(mintId === 'default' ? undefined : mintId)
-    const fanoutMint = fanoutMints.data?.find(
-      (fanoutMint) => fanoutMint.data.mint.toString() === mintId
-    )
-    if (environment.label === 'mainnet-beta') {
-      router.push(`${location.pathname}#${fanoutMint?.config.symbol ?? ''}`)
-    }
-  }
-
   type Manifest = {
     name: string
     image: string
@@ -252,7 +188,11 @@ const Home: NextPage = () => {
     addAllMembers: boolean
   ) => {
     if (wallet && wallet.publicKey && fanoutData.fanoutId) {
-      const metadata = await getMetadata(new PublicKey(nft))
+
+      const metadata = (await programs.metadata.Metadata.findByMint (connection, new PublicKey(nft))).pubkey;
+
+
+    
       console.log(metadata.toBase58())
       const fanoutSdk = new FanoutClient(connection, asWallet(wallet!))
       const [nativeAccountId] = await FanoutClient.nativeAccount(
@@ -377,22 +317,7 @@ const Home: NextPage = () => {
                 {shortPubKey(fanoutData.data?.fanoutId.toString())}
               </a>
             </p>
-            {selectedFanoutMint ? (
-              <p className="font-bold uppercase tracking-wide text-md mb-1">
-                {selectedFanoutMint.config.symbol} Wallet Token Account:{' '}
-                <a
-                  className="hover:text-blue-500 transition"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={pubKeyUrl(
-                    selectedFanoutMint.data.tokenAccount,
-                    environment.label
-                  )}
-                >
-                  {shortPubKey(selectedFanoutMint.data.tokenAccount)}
-                </a>
-              </p>
-            ) : (
+           
               <p className="font-bold uppercase tracking-wide text-md mb-1">
                 Update Authority:{' '}
                 <a
@@ -407,7 +332,6 @@ const Home: NextPage = () => {
                   {shortPubKey(fanoutData.data?.nativeAccount)}
                 </a>
               </p>
-            )}
 
             <p className="font-bold uppercase tracking-wide text-md mb-1">
               Cost {fanoutData.data?.fanout?.totalShares.toString()}

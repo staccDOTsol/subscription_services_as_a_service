@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::error::UpdateMetadataError;
 use crate::processors::update_metadata::arg::UpdateArgs;
 use crate::state::Fanout;
@@ -9,10 +11,32 @@ use anchor_lang::prelude::*;
 use mpl_token_metadata::instruction::update_metadata_accounts_v2;
 use mpl_token_metadata::instruction::update_metadata_accounts;
 use mpl_token_metadata::state::Data;
-use mpl_token_metadata::state::DataV2;
+use mpl_token_metadata::state::Creator;
+use mpl_token_metadata::state::MAX_NAME_LENGTH;
+use mpl_token_metadata::state::MAX_SYMBOL_LENGTH;
+use mpl_token_metadata::state::MAX_URI_LENGTH;
 
 use anchor_spl::token::{Mint, TokenAccount};
 use spl_token::solana_program::program::invoke_signed;
+
+pub fn puff_out_data_fields(metadata: &mut UpdateArgs) {
+    metadata.name = puffed_out_string(&metadata.name, MAX_NAME_LENGTH);
+    metadata.symbol = puffed_out_string(&metadata.symbol, MAX_SYMBOL_LENGTH);
+    metadata.uri = puffed_out_string(&metadata.uri, MAX_URI_LENGTH);
+}
+
+/// Pads the string to the desired size with `0u8`s.
+/// NOTE: it is assumed that the string's size is never larger than the given size.
+pub fn puffed_out_string(s: &str, size: usize) -> String {
+    let mut array_of_zeroes = vec![];
+    let puff_amount = size - s.len();
+    while array_of_zeroes.len() < puff_amount {
+        array_of_zeroes.push(0u8);
+    }
+    s.to_owned() + std::str::from_utf8(&array_of_zeroes).unwrap()
+}
+
+
 #[derive(AnchorSerialize, AnchorDeserialize, Accounts)]
 pub struct SignMetadata<'info> {
     #[account(mut)]
@@ -78,19 +102,40 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let jare_info = &ctx.accounts.jare.to_account_info();
     let total_shares = &ctx.accounts.fanout.total_shares;
     let md = Metadata::from_account_info(metadata)?;
-    if md.data.creators != args.creators {
-       return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
-    if md.data.seller_fee_basis_points != args.seller_fee_basis_points {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
-    if md.data.symbol != args.symbol {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
-    if md.data.name != args.name {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
+    msg!("4");
+    
+        // If there is an existing creator's array, store this in a hashmap as well.
+        let existing_creators_map: Option<HashMap<&Pubkey, &Creator>> = md
+            .data
+            .creators
+            .as_ref()
+            .map(|existing_creators| existing_creators.iter().map(|c| (&c.address, c)).collect());
+// If there is an existing creator's array, store this in a hashmap as well.
+let new_creators_map: Option<HashMap<&Pubkey, &Creator>> = args
+.creators
+.as_ref()
+.map(|existing_creators| existing_creators.iter().map(|c| (&c.address, c)).collect());
+if existing_creators_map != new_creators_map {
+    return Err(UpdateMetadataError::InvalidMetadata.into());
 
+}
+let mut mut_args = args;
+puff_out_data_fields(&mut mut_args);
+msg!("1");
+if md.data.seller_fee_basis_points.to_string() != mut_args
+.seller_fee_basis_points
+.to_string() {
+    return Err(UpdateMetadataError::InvalidMetadata.into());
+}
+
+msg!("2");
+if md.data.symbol != mut_args.symbol {
+    return Err(UpdateMetadataError::InvalidMetadata.into());
+}
+msg!("3");
+if md.data.name != mut_args.name {
+    return Err(UpdateMetadataError::InvalidMetadata.into());
+}
     assert_ata(
         &ctx.accounts.ata.to_account_info(),
         &authority_info.key(),
@@ -149,11 +194,11 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
             holding_account.key(),
             None,
             Some(Data {
-                name: args.name,
-                symbol: args.symbol,
-                uri: args.uri,
-                seller_fee_basis_points: args.seller_fee_basis_points,
-                creators: args.creators,
+                name: md.data.name,
+                symbol: md.data.symbol,
+                uri: mut_args.uri,
+                seller_fee_basis_points: md.data.seller_fee_basis_points,
+                creators: md.data.creators,
             }),
             None,
         ),

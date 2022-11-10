@@ -1,4 +1,4 @@
-use crate::state::{Fanout, FanoutMembershipVoucher};
+use crate::state::{Fanout};
 use crate::utils::validation::{assert_owned_by, assert_owned_by_one};
 use anchor_lang::prelude::*;
 use anchor_spl::token::Token;

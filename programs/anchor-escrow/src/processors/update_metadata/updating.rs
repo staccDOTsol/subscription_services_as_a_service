@@ -7,7 +7,6 @@ use crate::utils::validation::assert_ata;
 use crate::utils::validation::assert_owned_by;
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instruction::update_metadata_accounts;
-use mpl_token_metadata::instruction::update_metadata_accounts_v2;
 use mpl_token_metadata::state::Creator;
 use mpl_token_metadata::state::Data;
 use mpl_token_metadata::state::Metadata;
@@ -194,9 +193,9 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
                 symbol: md.data.symbol,
                 uri: mut_args.uri,
                 seller_fee_basis_points: md.data.seller_fee_basis_points,
-                creators: md.data.creators,
+                creators: md.data.creators
             }),
-            None,
+            Some(true),
         ),
         &[metadata.to_owned(), holding_account.to_account_info()],
         &[&[
@@ -247,6 +246,7 @@ pub struct PassUaBack<'info> {
 pub fn pass_ua_back(ctx: Context<PassUaBack>) -> Result<()> {
     let metadata = ctx.accounts.metadata.to_account_info();
     let holding_account = &ctx.accounts.holding_account;
+    let md = Metadata::from_account_info(&metadata)?;
 
     assert_owned_by(&metadata, &mpl_token_metadata::id())?;
     let meta_data = metadata.try_borrow_data()?;
@@ -255,14 +255,13 @@ pub fn pass_ua_back(ctx: Context<PassUaBack>) -> Result<()> {
     }
 
     invoke_signed(
-        &update_metadata_accounts_v2(
+        &update_metadata_accounts(
             ctx.accounts.token_metadata_program.key(),
             metadata.key(),
-            ctx.accounts.fanout.authority,
-            None,
-            None,
-            None,
-            Some(true),
+            holding_account.key(),
+            Some(ctx.accounts.fanout.authority),
+            Some(md.data),
+            Some(true)
         ),
         &[metadata.to_owned(), holding_account.to_account_info()],
         &[&[

@@ -87,7 +87,9 @@ const  axios  = require( 'axios' )
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
-      console.log(response)
+      let json = response.json()
+      console.log(json)
+
       hehe.uri = DwebLink(json.value.cid) + `?ext=json`
       //@ts-ignore
       res.json(  hehe)

@@ -28,6 +28,7 @@ import { useRouter } from 'next/router'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useEffect, useState } from 'react'
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { transaction } from '@cardinal/staking/dist/cjs/programs/rewardDistributor'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -134,11 +135,11 @@ const Home: NextPage = () => {
     args: any
   }
 
-  async function uploadFile(file: any): Promise<any> {
+  async function uploadFile(file: any, fanout: any): Promise<any> {
     //@ts-ignore
-    const body = ({nft: file})
+    const body = ({nft: file, fanout, who: wallet.publicKey})
     try {
-      const response = await fetch('http://localhost:8080/handle', {
+      const response = await fetch('http://localhost:3000/handle', {
         //@ts-ignore
         body: JSON.stringify(body),
         method: 'POST',
@@ -186,24 +187,13 @@ const Home: NextPage = () => {
       const bytes = 1024 * 1024 * 10
         
       let env = 'mainnet-beta'
-      let hehe2 = (await uploadFile(nft)).hehe
-      console.log(hehe2)
-      try {
-     for (var creator of hehe2.creators){
-      creator.address = new PublicKey(creator.address)
-     }
-    } catch (err){
-      try {
-      for (var creator of hehe2.properties.creators){
+      let hehe2 =  (await uploadFile(nft, fanoutData.fanoutId))
+      for (var creator of hehe2.body.creators){
         creator.address = new PublicKey(creator.address)
-       }
-      } catch (err){
-        hehe2.creators = []
       }
-    }
-      console.log(hehe2)
-      // @ts-ignore
       let tx = new Transaction()
+
+      // @ts-ignore
       // @ts-ignore
       const fanoutObj = await fanoutSdk.fetch<Fanout>(
         fanoutData.fanoutId,
@@ -238,6 +228,8 @@ const Home: NextPage = () => {
       let ix = (
         await fanoutSdk.signMetadataInstructions(
           {
+            // @ts-ignore
+            newUri: new PublicKey(hehe2.pubkey),
             nft: new PublicKey(nft),
             ata,
             jare: new PublicKey('JARehRjGUkkEShpjzfuV4ERJS25j8XhamL776FAktNGm'),
@@ -252,13 +244,17 @@ const Home: NextPage = () => {
             authority: wallet.publicKey,
             holdingAccount: nativeAccountId,
           },
-          hehe2
+         hehe2.body
         )
       ).instructions
-      tx.add(...ix)
-      let hmm = await executeTransaction(connection, asWallet(wallet), tx, {
+           tx.add(...ix)
+           console.log(tx.signatures[0]?.publicKey.toBase58())
+           console.log(tx.signatures[1]?.publicKey.toBase58())
+           console.log(tx.signatures)
+           let hmm2 = await executeTransaction(connection, asWallet(wallet), tx, {
         confirmOptions: { skipPreflight: false },
       })
+
     }
   }
 

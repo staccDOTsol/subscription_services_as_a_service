@@ -7,77 +7,75 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
-import {
-  InitializeFanoutArgs,
-  initializeFanoutArgsBeet,
-} from '../types/InitializeFanoutArgs'
+import { NewUriArgs, newUriArgsBeet } from '../types/NewUriArgs'
 
 /**
  * @category Instructions
- * @category ProcessInit
+ * @category ProcessSubmitUri
  * @category generated
  */
-export type ProcessInitInstructionArgs = {
-  args: InitializeFanoutArgs
+export type ProcessSubmitUriInstructionArgs = {
+  args: NewUriArgs
 }
 /**
  * @category Instructions
- * @category ProcessInit
+ * @category ProcessSubmitUri
  * @category generated
  */
-export const processInitStruct = new beet.FixableBeetArgsStruct<
-  ProcessInitInstructionArgs & {
+export const processSubmitUriStruct = new beet.FixableBeetArgsStruct<
+  ProcessSubmitUriInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['args', initializeFanoutArgsBeet],
+    ['args', newUriArgsBeet],
   ],
-  'ProcessInitInstructionArgs'
+  'ProcessSubmitUriInstructionArgs'
 )
 /**
- * Accounts required by the _processInit_ instruction
+ * Accounts required by the _processSubmitUri_ instruction
  *
  * @property [_writable_, **signer**] authority
- * @property [_writable_] fanout
- * @property [_writable_] holdingAccount
- * @property [] mint
+ * @property [] fanout
+ * @property [] wallet
+ * @property [_writable_] newUri
+ * @property [] rentKey
  * @category Instructions
- * @category ProcessInit
+ * @category ProcessSubmitUri
  * @category generated
  */
-export type ProcessInitInstructionAccounts = {
+export type ProcessSubmitUriInstructionAccounts = {
   authority: web3.PublicKey
   fanout: web3.PublicKey
-  holdingAccount: web3.PublicKey
+  wallet: web3.PublicKey
+  newUri: web3.PublicKey
   systemProgram?: web3.PublicKey
-  rent?: web3.PublicKey
-  mint: web3.PublicKey
+  rentKey: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const processInitInstructionDiscriminator = [
-  172, 5, 165, 143, 86, 159, 50, 237,
+export const processSubmitUriInstructionDiscriminator = [
+  197, 152, 150, 67, 210, 138, 175, 153,
 ]
 
 /**
- * Creates a _ProcessInit_ instruction.
+ * Creates a _ProcessSubmitUri_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category ProcessInit
+ * @category ProcessSubmitUri
  * @category generated
  */
-export function createProcessInitInstruction(
-  accounts: ProcessInitInstructionAccounts,
-  args: ProcessInitInstructionArgs,
+export function createProcessSubmitUriInstruction(
+  accounts: ProcessSubmitUriInstructionAccounts,
+  args: ProcessSubmitUriInstructionArgs,
   programId = new web3.PublicKey('5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW')
 ) {
-  const [data] = processInitStruct.serialize({
-    instructionDiscriminator: processInitInstructionDiscriminator,
+  const [data] = processSubmitUriStruct.serialize({
+    instructionDiscriminator: processSubmitUriInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
@@ -88,11 +86,16 @@ export function createProcessInitInstruction(
     },
     {
       pubkey: accounts.fanout,
-      isWritable: true,
+      isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.holdingAccount,
+      pubkey: accounts.wallet,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.newUri,
       isWritable: true,
       isSigner: false,
     },
@@ -102,12 +105,7 @@ export function createProcessInitInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.rent ?? web3.SYSVAR_RENT_PUBKEY,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.mint,
+      pubkey: accounts.rentKey,
       isWritable: false,
       isSigner: false,
     },

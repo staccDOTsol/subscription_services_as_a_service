@@ -26,3 +26,13 @@ pub struct Fanout {
     pub total_available_shares: u64, //8
     pub mint: Pubkey,                //8
 }
+
+#[account]
+#[derive(Default, Debug)]
+pub struct NewUri {
+    pub authority: Pubkey,           //32
+    pub fanout: Pubkey,                //32
+    pub uri: String  ,                //50
+    pub bump: u8
+}
+

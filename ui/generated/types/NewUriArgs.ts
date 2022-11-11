@@ -6,15 +6,16 @@
  */
 
 import * as beet from '@metaplex-foundation/beet'
-export type AddMemberArgs = {
-  shares: beet.bignum
+export type NewUriArgs = {
+  uri: string
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const addMemberArgsBeet = new beet.BeetArgsStruct<AddMemberArgs>(
-  [['shares', beet.u64]],
-  'AddMemberArgs'
+export const newUriArgsBeet : any = (
+  [
+    
+  ]
 )

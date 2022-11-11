@@ -5,59 +5,59 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 
 /**
  * @category Instructions
- * @category ProcessAddMemberWallet
+ * @category ProcessPassUaBack
  * @category generated
  */
-export const processAddMemberWalletStruct = new beet.BeetArgsStruct<{
+export const processPassUaBackStruct = new beet.BeetArgsStruct<{
   instructionDiscriminator: number[] /* size: 8 */
 }>(
   [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'ProcessAddMemberWalletInstructionArgs'
+  'ProcessPassUaBackInstructionArgs'
 )
 /**
- * Accounts required by the _processAddMemberWallet_ instruction
+ * Accounts required by the _processPassUaBack_ instruction
  *
  * @property [_writable_, **signer**] authority
- * @property [] member
- * @property [_writable_] fanout
+ * @property [] fanout
+ * @property [] holdingAccount
+ * @property [_writable_] metadata
+ * @property [] tokenMetadataProgram
  * @category Instructions
- * @category ProcessAddMemberWallet
+ * @category ProcessPassUaBack
  * @category generated
  */
-export type ProcessAddMemberWalletInstructionAccounts = {
+export type ProcessPassUaBackInstructionAccounts = {
   authority: web3.PublicKey
-  member: web3.PublicKey
   fanout: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  rent?: web3.PublicKey
-  tokenProgram?: web3.PublicKey
+  holdingAccount: web3.PublicKey
+  metadata: web3.PublicKey
+  tokenMetadataProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const processAddMemberWalletInstructionDiscriminator = [
-  201, 9, 59, 128, 69, 117, 220, 235,
+export const processPassUaBackInstructionDiscriminator = [
+  180, 66, 26, 192, 55, 23, 178, 235,
 ]
 
 /**
- * Creates a _ProcessAddMemberWallet_ instruction.
+ * Creates a _ProcessPassUaBack_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @category Instructions
- * @category ProcessAddMemberWallet
+ * @category ProcessPassUaBack
  * @category generated
  */
-export function createProcessAddMemberWalletInstruction(
-  accounts: ProcessAddMemberWalletInstructionAccounts,
+export function createProcessPassUaBackInstruction(
+  accounts: ProcessPassUaBackInstructionAccounts,
   programId = new web3.PublicKey('5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW')
 ) {
-  const [data] = processAddMemberWalletStruct.serialize({
-    instructionDiscriminator: processAddMemberWalletInstructionDiscriminator,
+  const [data] = processPassUaBackStruct.serialize({
+    instructionDiscriminator: processPassUaBackInstructionDiscriminator,
   })
   const keys: web3.AccountMeta[] = [
     {
@@ -66,27 +66,22 @@ export function createProcessAddMemberWalletInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.member,
+      pubkey: accounts.fanout,
       isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.fanout,
+      pubkey: accounts.holdingAccount,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.metadata,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.rent ?? web3.SYSVAR_RENT_PUBKEY,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      pubkey: accounts.tokenMetadataProgram,
       isWritable: false,
       isSigner: false,
     },

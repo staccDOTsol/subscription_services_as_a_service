@@ -1,8 +1,10 @@
 [features]
 seeds = false
 [programs.localnet]
-update_metadata = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+update_metadata = "5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"
 
+[programs.devnet]
+update_metadata = "5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"
 [registry]
 url = "https://anchor.projectserum.com"
 

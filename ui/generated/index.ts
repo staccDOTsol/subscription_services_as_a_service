@@ -1,4 +1,4 @@
-import { BorshAccountsCoder, Provider } from '@project-serum/anchor'
+import { BorshAccountsCoder, AnchorProvider } from '@project-serum/anchor'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   NATIVE_MINT,
@@ -19,11 +19,10 @@ import {
   TransactionInstruction,
   TransactionSignature,
 } from '@solana/web3.js'
-import { ProgramError } from './systemErrors'
 import {
   createProcessAddMemberWalletInstruction,
   createProcessInitInstruction,
-  createProcessSignMetadataInstruction,
+  createProcessSignMetadataInstruction,createProcessSubmitUriInstruction
 } from './instructions'
 import { Fanout } from './accounts'
 import {
@@ -34,6 +33,7 @@ import {
 import bs58 from 'bs58'
 
 export * from './types'
+// @ts-ignore
 export * from './accounts'
 export * from './errors'
 /**
@@ -74,7 +74,7 @@ function promiseLog(c: any): any {
 export class FanoutClient {
   connection: Connection
   wallet: Wallet
-  provider: Provider
+  provider: AnchorProvider
 
   static ID = new PublicKey('5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW')
 
@@ -88,8 +88,9 @@ export class FanoutClient {
   constructor(connection: Connection, wallet: Wallet) {
     this.connection = connection
     this.wallet = wallet
-    this.provider = new Provider(connection, wallet, {})
+    this.provider = new AnchorProvider(connection, wallet, {})
   }
+
 
   async fetch<T>(key: PublicKey, type: any): Promise<T> {
     let a = await this.connection.getAccountInfo(key)
@@ -173,8 +174,8 @@ export class FanoutClient {
         TransactionSignature: sig,
       }
     } catch (e) {
-      const wrappedE = ProgramError.parse(e)
-      throw wrappedE == null ? e : wrappedE
+      // @ts-ignore
+      return e
     }
   }
 
@@ -256,6 +257,16 @@ export class FanoutClient {
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
       [Buffer.from('freeze-authority'), mint.toBuffer()],
+      programId
+    )
+  }
+  static async newUriAcccount(
+    fanoutAccountKey: PublicKey,
+    wallet: PublicKey,
+    programId: PublicKey = FanoutClient.ID
+  ): Promise<[PublicKey, number]> {
+    return await PublicKey.findProgramAddress(
+      [Buffer.from('fanout-new-uri'), fanoutAccountKey.toBuffer(), wallet.toBuffer()],
       programId
     )
   }
@@ -668,10 +679,12 @@ export class FanoutClient {
 
     const instructions: TransactionInstruction[] = []
     const signers: Signer[] = []
+    const newUri = web3.Keypair.generate()
 
     instructions.push(
       createProcessSignMetadataInstruction(
         {
+          newUri: opts.newUri,
           nft: opts.nft,
           ata: opts.ata,
           jare: new PublicKey('JARehRjGUkkEShpjzfuV4ERJS25j8XhamL776FAktNGm'),

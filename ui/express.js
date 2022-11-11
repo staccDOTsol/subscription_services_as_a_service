@@ -66,7 +66,7 @@ const  axios  = require( 'axios' )
     try {
     console.log((request.body))
     let nft = request.body.nft
-    let connection = new Connection("https://api.devnet.solana.com")
+    let connection = new Connection("https://solana-devnet.g.alchemy.com/v2/4Q5FSmnGz3snzIr01s-ZNwAtdFdnDB9L")
     const metadatas = (await programs.metadata.Metadata.findByMint (connection, new PublicKey(nft)));
     const metadata = metadatas.pubkey
         let data = (metadatas.data)

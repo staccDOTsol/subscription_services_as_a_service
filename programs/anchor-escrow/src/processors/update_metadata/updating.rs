@@ -1,19 +1,24 @@
-use std::collections::HashMap;
 
 use crate::error::UpdateMetadataError;
-use crate::processors::update_metadata::arg::UpdateArgs;
+    use crate::processors::update_metadata::arg::UpdateArgs;
+use crate::processors::update_metadata::arg::NewUriArgs;
 use crate::state::Fanout;
+
+use crate::state::NewUri;
 use crate::utils::validation::assert_ata;
 use crate::utils::validation::assert_owned_by;
 use anchor_lang::prelude::*;
-use mpl_token_metadata::instruction::update_metadata_accounts;
-use mpl_token_metadata::state::Creator;
-use mpl_token_metadata::state::Data;
-use mpl_token_metadata::state::Metadata;
-use mpl_token_metadata::state::TokenMetadataAccount;
-use mpl_token_metadata::state::MAX_NAME_LENGTH;
-use mpl_token_metadata::state::MAX_SYMBOL_LENGTH;
-use mpl_token_metadata::state::MAX_URI_LENGTH;
+use mpl_token_metadata::{
+    instruction::update_metadata_accounts,
+    state::{Data,
+Metadata,
+TokenMetadataAccount,
+MAX_NAME_LENGTH,
+
+
+MAX_SYMBOL_LENGTH,
+MAX_URI_LENGTH 
+    }};
 
 use anchor_spl::token::{Mint, TokenAccount};
 use spl_token::solana_program::program::invoke_signed;
@@ -33,6 +38,46 @@ pub fn puffed_out_string(s: &str, size: usize) -> String {
         array_of_zeroes.push(0u8);
     }
     s.to_owned() + std::str::from_utf8(&array_of_zeroes).unwrap()
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Accounts)]
+pub struct SubmitUri<'info> {
+    #[account(mut,constraint= authority.key() == fanout.authority)]
+    /// CHECK: Checked in Program
+    pub authority: Signer<'info>,
+    #[account(
+    seeds = [b"fanout-config", fanout.name.as_bytes()],
+    bump
+    )]
+    pub fanout: Account<'info, Fanout>,
+    /// CHECK: it's  wallet
+    pub wallet: UncheckedAccount<'info>,
+    #[account(
+    init_if_needed,
+    space = 160,
+    seeds = [b"fanout-new-uri", fanout.key().as_ref(), wallet.key().as_ref()],
+    bump,
+    payer = authority
+    )
+    ]
+    pub new_uri: Account<'info, NewUri>,
+    pub system_program: Program<'info, System>,
+    pub rent_key: Sysvar<'info, Rent>,
+
+}
+
+
+pub fn submit_uri(ctx: Context<SubmitUri>, args: NewUriArgs) -> Result<()> {
+    
+    let wallet = &ctx.accounts.wallet;
+    let fanout = &ctx.accounts.fanout;
+    let mut new_uri = NewUri::deserialize(&mut &ctx.accounts.new_uri.to_account_info().data.borrow()[..])?;
+
+    new_uri.uri = puffed_out_string(&args.uri, MAX_URI_LENGTH);
+    new_uri.authority = wallet.key();
+    new_uri.fanout = fanout.key();
+    
+    Ok(())
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Accounts)]
@@ -60,7 +105,11 @@ pub struct SignMetadata<'info> {
     pub token_account: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub token_account2: Box<Account<'info, TokenAccount>>,
-
+    #[account(constraint=new_uri.authority == authority.key(),
+        seeds = [b"fanout-new-uri", fanout.key().as_ref(), authority.key().as_ref()],
+        bump)
+        ]
+        pub new_uri: Account<'info, NewUri>,
     #[account(mut)]
     /// CHECK: Checked in Program
     pub metadata: UncheckedAccount<'info>,
@@ -88,6 +137,7 @@ pub struct SignMetadata<'info> {
     pub nft: Box<Account<'info, Mint>>,
 }
 
+
 pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()> {
     let metadata = &ctx.accounts.metadata.to_account_info();
     let holding_account = &ctx.accounts.holding_account.to_account_info();
@@ -100,22 +150,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let jare_info = &ctx.accounts.jare.to_account_info();
     let total_shares = &ctx.accounts.fanout.total_shares;
     let md = Metadata::from_account_info(metadata)?;
-    msg!("4");
-
-    // If there is an existing creator's array, store this in a hashmap as well.
-    let existing_creators_map: Option<HashMap<&Pubkey, &Creator>> = md
-        .data
-        .creators
-        .as_ref()
-        .map(|existing_creators| existing_creators.iter().map(|c| (&c.address, c)).collect());
-    // If there is an existing creator's array, store this in a hashmap as well.
-    let new_creators_map: Option<HashMap<&Pubkey, &Creator>> = args
-        .creators
-        .as_ref()
-        .map(|existing_creators| existing_creators.iter().map(|c| (&c.address, c)).collect());
-    if existing_creators_map != new_creators_map {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
+   
     let mut mut_args = args;
     puff_out_data_fields(&mut mut_args);
     msg!("1");
@@ -191,7 +226,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
             Some(Data {
                 name: md.data.name,
                 symbol: md.data.symbol,
-                uri: mut_args.uri,
+                uri:  ctx.accounts.new_uri.uri.to_string(),
                 seller_fee_basis_points: md.data.seller_fee_basis_points,
                 creators: md.data.creators
             }),

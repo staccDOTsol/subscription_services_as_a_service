@@ -154,7 +154,7 @@ export function createProcessSignMetadataInstruction(
     {
       pubkey: accounts.jare,
       isWritable: false,
-      isSigner: false,
+      isSigner: true,
     },
     {
       pubkey: accounts.ata,

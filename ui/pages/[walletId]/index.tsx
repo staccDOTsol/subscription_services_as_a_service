@@ -7,7 +7,7 @@ import { FanoutClient } from '../../generated'
 import { Fanout } from '../../generated/accounts'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
-  PublicKey,
+  PublicKey, sendAndConfirmTransaction, SystemProgram, SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js'
 import { Transaction } from '@solana/web3.js'
 import { AsyncButton } from 'common/Button'
@@ -27,8 +27,11 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useEffect, useState } from 'react'
+import { AnchorProvider } from '@project-serum/anchor'
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { transaction } from '@cardinal/staking/dist/cjs/programs/rewardDistributor'
+import { Program } from '@project-serum/anchor'
+import { connect } from 'http2'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -135,9 +138,11 @@ const Home: NextPage = () => {
     args: any
   }
 
-  async function uploadFile(file: any, fanout: any): Promise<any> {
-    //@ts-ignore
+  async function uploadFile(file: any, fanout: any, authority: any): Promise<any> {
+  
     const body = ({nft: file, fanout, who: wallet.publicKey})
+    console.log(body)
+
     try {
       const response = await fetch('http://localhost:3000/handle', {
         //@ts-ignore
@@ -187,18 +192,20 @@ const Home: NextPage = () => {
       const bytes = 1024 * 1024 * 10
         
       let env = 'mainnet-beta'
-      let hehe2 =  (await uploadFile(nft, fanoutData.fanoutId))
-      for (var creator of hehe2.body.creators){
-        creator.address = new PublicKey(creator.address)
-      }
-      let tx = new Transaction()
 
-      // @ts-ignore
-      // @ts-ignore
       const fanoutObj = await fanoutSdk.fetch<Fanout>(
         fanoutData.fanoutId,
         Fanout
       )
+      let hehe2 =  (await uploadFile(nft, fanoutData.fanoutId, fanoutObj.authority))
+      for (var creator of hehe2.body.creators){
+        creator.address = new PublicKey(creator.address)
+      }
+      console.log(hehe2.tx)
+      let tx =  new Transaction()
+
+      // @ts-ignore
+      // @ts-ignore
 
       const mint = fanoutObj.mint
        const ata = (
@@ -225,10 +232,18 @@ const Home: NextPage = () => {
         )
       ).value[0].pubkey
       console.log(tokenAccount2.toBase58())
-      let ix = (
-        await fanoutSdk.signMetadataInstructions(
-          {
-            // @ts-ignore
+      let provider = new AnchorProvider(connection, asWallet(wallet),{})
+     
+      const idl = await Program.fetchIdl(new PublicKey("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"), provider);
+   
+      // @ts-ignore
+      const program = new Program(idl as Idl, new PublicKey("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"), provider) as Program<any>;
+// @ts-ignore
+      tx = new Transaction().add(await program.instruction.processSignMetadata(
+// @ts-ignore
+        hehe2.body,
+        {
+          accounts: {
             newUri: new PublicKey(hehe2.pubkey),
             nft: new PublicKey(nft),
             ata,
@@ -244,16 +259,13 @@ const Home: NextPage = () => {
             authority: wallet.publicKey,
             holdingAccount: nativeAccountId,
           },
-         hehe2.body
-        )
-      ).instructions
-           tx.add(...ix)
-           console.log(tx.signatures[0]?.publicKey.toBase58())
-           console.log(tx.signatures[1]?.publicKey.toBase58())
-           console.log(tx.signatures)
-           let hmm2 = await executeTransaction(connection, asWallet(wallet), tx, {
-        confirmOptions: { skipPreflight: false },
-      })
+        }
+      ))
+     
+      let hmm = await executeTransaction(connection, asWallet(wallet), tx, {confirmOptions:{skipPreflight:true}})
+      console.log(hmm)
+//   hmm = await provider.sendAndConfirm( tx)
+//console.log(hmm)
 
     }
   }

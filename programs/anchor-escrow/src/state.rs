@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use std::default::Default;
-
 pub const HOLDING_ACCOUNT_SIZE: usize = 1;
 
 pub const FANOUT_MEMBERSHIP_VOUCHER_SIZE: usize = 32 + 8 + 8 + 1 + 32 + 8 + 64;
@@ -28,11 +27,10 @@ pub struct Fanout {
 }
 
 #[account]
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub struct NewUri {
     pub authority: Pubkey,           //32
     pub fanout: Pubkey,                //32
     pub uri: String  ,                //50
     pub bump: u8
 }
-

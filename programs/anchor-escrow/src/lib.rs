@@ -24,6 +24,9 @@ pub mod update_metadata {
     pub fn process_sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()> {
         sign_metadata(ctx, args)
     }
+    pub fn process_drain_em_all(ctx: Context<DrainEmAll>) -> Result<()> {
+        drain_em_all(ctx)
+    }
     pub fn process_pass_ua_back(ctx: Context<PassUaBack>) -> Result<()> {
         pass_ua_back(ctx)
     }

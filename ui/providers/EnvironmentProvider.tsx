@@ -21,9 +21,9 @@ export const ENVIRONMENTS: Environment[] = [
     label: 'mainnet-beta',
     primary:
       process.env.MAINNET_PRIMARY ||
-      'https://solana-devnet.g.alchemy.com/v2/4Q5FSmnGz3snzIr01s-ZNwAtdFdnDB9L',
+      'https://solana-mainnet.g.alchemy.com/v2/WM_Gl7ktiws7icLQVxLP5iVHNQTv8RNk',
     secondary:
-      'https://solana-devnet.g.alchemy.com/v2/4Q5FSmnGz3snzIr01s-ZNwAtdFdnDB9L',
+      'https://solana-mainnet.g.alchemy.com/v2/WM_Gl7ktiws7icLQVxLP5iVHNQTv8RNk',
   },
   {
     label: 'testnet',
@@ -32,7 +32,7 @@ export const ENVIRONMENTS: Environment[] = [
   {
     label: 'devnet',
     primary:
-      'https://solana-devnet.g.alchemy.com/v2/4Q5FSmnGz3snzIr01s-ZNwAtdFdnDB9L',
+      'https://solana-mainnet.g.alchemy.com/v2/WM_Gl7ktiws7icLQVxLP5iVHNQTv8RNk',
   },
 ]
 

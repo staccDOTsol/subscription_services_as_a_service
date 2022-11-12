@@ -7,6 +7,8 @@ pub struct InitializeFanoutArgs {
     pub native_account_bump_seed: u8,
     pub name: String,
     pub total_shares: u64,
+    pub shares: Vec<u64>,
+    pub trait_options: Vec<String>,
     pub mint: Pubkey,
 }
 
@@ -17,8 +19,8 @@ pub struct InitializeFanout<'info> {
     pub authority: Signer<'info>,
     #[account(
     init,
-    space = 300,
-    seeds = [b"fanout-config", args.name.as_bytes()],
+    space = 3200,
+    seeds = [b"upgrad00r-config", args.name.as_bytes()],
     bump,
     payer = authority
     )]
@@ -26,7 +28,7 @@ pub struct InitializeFanout<'info> {
     #[account(
     init,
     space = 1,
-    seeds = [b"fanout-native-account", fanout.key().as_ref()],
+    seeds = [b"upgrad00r-native-account", fanout.key().as_ref()],
     bump,
     payer = authority
     )
@@ -50,5 +52,8 @@ pub fn init(ctx: Context<InitializeFanout>, args: InitializeFanoutArgs) -> Resul
     fanout.total_available_shares = args.total_shares;
     fanout.bump_seed = args.bump_seed;
 
+    fanout.trait_options = args.trait_options;
+
+    fanout.shares = args.shares;
     Ok(())
 }

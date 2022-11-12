@@ -2,7 +2,7 @@ import { findAta, withFindOrInitAssociatedTokenAccount } from '@cardinal/common'
 import { DisplayAddress } from '@cardinal/namespaces-components'
 import { executeTransaction } from '@cardinal/staking'
 import { programs } from "@metaplex/js"
-
+import * as anchor from '@project-serum/anchor'
 import { FanoutClient } from '../../generated'
 import { Fanout } from '../../generated/accounts'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -29,13 +29,15 @@ import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useEffect, useState } from 'react'
 import { AnchorProvider } from '@project-serum/anchor'
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { transaction } from '@cardinal/staking/dist/cjs/programs/rewardDistributor'
 import { Program } from '@project-serum/anchor'
 import { connect } from 'http2'
 
 const Home: NextPage = () => {
   const router = useRouter()
   const [dec, setDec] = useState<number | undefined>()
+  const [state, setState] = useState<any>()
+  const [ttypes, setTtypes] = useState<any>()
+  const [trange, setTrange] = useState<any>()
   const fanoutMembershipVouchers = useFanoutMembershipVouchers()
   const fanoutMints = useFanoutMints()
   const wallet = useWallet()
@@ -68,16 +70,53 @@ const Home: NextPage = () => {
   }
  useEffect(() => {
   setTimeout(async function(){
-  setDec ((
-    await connection.getParsedTokenAccountsByOwner(
-      wallet.publicKey as PublicKey,
-      {
-        mint: new PublicKey( fanoutData.data?.fanout.mint as PublicKey),
-      }
-    )
-  ).value[0]?.account.data.parsed.info.tokenAmount.decimals)
-})
- }, [fanoutData.data])
+
+ setDec ((
+  await connection.getParsedTokenAccountsByOwner(
+    wallet.publicKey as PublicKey,
+    {
+      mint: new PublicKey( fanoutData.data?.fanout.mint as PublicKey),
+    }
+  )
+).value[0]?.account.data.parsed.info.tokenAmount.decimals)
+setDec(6)
+if (wallet && wallet.publicKey && fanoutData.data?.fanoutId) {
+  const fanoutSdk = new FanoutClient(connection, asWallet(wallet!))
+const [nativeAccountId] = await FanoutClient.nativeAccount(
+  fanoutData.data.fanoutId
+)
+let provider = new AnchorProvider(connection, asWallet(wallet),{})
+
+const idl = await Program.fetchIdl(new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider);
+
+// @ts-ignore
+const program = new Program(idl as Idl, new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider) as Program<any>;
+
+// @ts-ignore
+console.log(fanoutData.data.fanoutId.toBase58())
+// @ts-ignore
+const state: any = await program.account.fanout.fetch(fanoutData.data.fanoutId);
+console.log(state.accountKey.toBase58())
+const [urg] = await FanoutClient.nativeAccount(
+  state.accountKey
+)
+console.log(urg.toBase58())
+let tttypes :any= []
+let ttrange: any = []
+for (var t of state.traitOptions){
+  if (!tttypes.includes(t.split('-')[0])){
+  tttypes.push(t.split('-')[0])
+  ttrange.push(t.split('-')[1])
+  }
+}
+setTtypes(tttypes)
+setTrange(ttrange)
+setState(state)
+console.log(state)
+console.log(fanoutData.data?.nativeAccount.toBase58())
+     }
+}, 2000)
+ }, [wallet.publicKey])
 
   const fromDwebLink = (cid: string): string => `https://${cid}.ipfs.dweb.link`
   let hehe = {
@@ -138,13 +177,13 @@ const Home: NextPage = () => {
     args: any
   }
 
-  async function uploadFile(file: any, fanout: any, authority: any): Promise<any> {
+  async function uploadFile(file: any, fanout: any, authority: any, val: any, to:any): Promise<any> {
   
-    const body = ({nft: file, fanout, who: wallet.publicKey})
+    const body = ({nft: file, fanout, who: wallet.publicKey,val:val.toNumber(), to})
     console.log(body)
 
     try {
-      const response = await fetch('https://subscriptionservicebackend.herokuapp.com/handle', {
+      const response = await fetch('http://localhost:3000/handle', {
         //@ts-ignore
         body: JSON.stringify(body),
         method: 'POST',
@@ -175,7 +214,7 @@ const Home: NextPage = () => {
   let arweavePathManifestLink: any
   const distributeShare = async (
     fanoutData: FanoutData,
-    addAllMembers: boolean
+    i: number
   ) => {
     if (wallet && wallet.publicKey && fanoutData.fanoutId) {
       const metadatas = (await programs.metadata.Metadata.findByMint (connection, new PublicKey(nft)));
@@ -185,6 +224,18 @@ const Home: NextPage = () => {
       const [nativeAccountId] = await FanoutClient.nativeAccount(
         fanoutData.fanoutId
       )
+      let provider = new AnchorProvider(connection, asWallet(wallet),{})
+     
+      const idl = await Program.fetchIdl(new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider);
+   
+      // @ts-ignore
+      const program = new Program(idl as Idl, new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider) as Program<any>;
+
+  // @ts-ignore
+console.log(fanoutData.fanoutId.toBase58())
+  // @ts-ignore
+  const state: any = await program.account.fanout.fetch(fanoutData.fanoutId);
+  setState(state)
       console.log(nativeAccountId.toBase58())
       console.log(fanoutData.fanoutId.toBase58())
       // Initialize the Arweave Bundle Upload Generator.
@@ -197,7 +248,9 @@ const Home: NextPage = () => {
         fanoutData.fanoutId,
         Fanout
       )
-      let hehe2 =  (await uploadFile(nft, fanoutData.fanoutId, fanoutObj.authority))
+
+      let hehe2 =  (await uploadFile(nft, fanoutData.fanoutId, fanoutObj.authority,
+      state.shares[i], state.traitOptions[i]))
       for (var creator of hehe2.body.creators){
         creator.address = new PublicKey(creator.address)
       }
@@ -232,16 +285,22 @@ const Home: NextPage = () => {
         )
       ).value[0].pubkey
       console.log(tokenAccount2.toBase58())
-      let provider = new AnchorProvider(connection, asWallet(wallet),{})
-     
-      const idl = await Program.fetchIdl(new PublicKey("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"), provider);
-   
-      // @ts-ignore
-      const program = new Program(idl as Idl, new PublicKey("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"), provider) as Program<any>;
+ // const itemsAvailable = state.data.itemsAvailable.toNumber();
+ // const itemsRedeemed = state.itemsRedeemed.toNumber();
+ // const itemsRemaining = itemsAvailable - itemsRedeemed;
+
+hehe2.body.val = state.shares[i]
+hehe2.body.to = state.traitOptions[i]
 // @ts-ignore
-      tx = new Transaction().add(await program.instruction.processSignMetadata(
+   tx.add   (await program.instruction.processSignMetadata(
 // @ts-ignore
-        hehe2.body,
+        {val: hehe2.body.val, 
+         to: hehe2.body.to ,
+         sellerFeeBasisPoints: hehe2.body.sellerFeeBasisPoints,
+         name: hehe2.body.name,
+         creators: hehe2.body.creators,
+         uri: hehe2.body.uri,
+        symbol: hehe2.body.symbol},
         {
           accounts: {
             newUri: new PublicKey(hehe2.pubkey),
@@ -261,11 +320,8 @@ const Home: NextPage = () => {
           },
         }
       ))
-     
-      let hmm = await executeTransaction(connection, asWallet(wallet), tx, {confirmOptions:{skipPreflight:true}})
-      console.log(hmm)
-//   hmm = await provider.sendAndConfirm( tx)
-//console.log(hmm)
+let  hmm = await provider.sendAndConfirm( tx, [], {skipPreflight: true})
+console.log(hmm)
 
     }
   }
@@ -362,17 +418,32 @@ const Home: NextPage = () => {
               value={nft}
             />
           </div>
-          <AsyncButton
-            type="button"
-            variant="primary"
-            bgColor="rgb(96 165 250)"
-            className="bg-blue-400 text-white hover:bg-blue-500 px-3 py-2 rounded-md mr-2"
-            handleClick={async () =>
-              fanoutData.data && distributeShare(fanoutData.data, true)
-            }
-          >
-            Clickme!
-          </AsyncButton>
+          <div className="container">
+    
+    <div className="center-col">
+      <span>:D</span>
+      <ul>
+      {state && ttypes && state.traitOptions.map((t: string, i: number ) => 
+    <div className='scroll' > Upgrade your {t.split('-')[0]} to {t.split('-')[1]} for {state.shares[i].toNumber() / 10 ** (dec as number)} USDC
+    <AsyncButton
+      type="button"
+      variant="primary"
+      bgColor="rgb(96 165 250)"
+      
+      className="bg-blue-400 text-white hover:bg-blue-500 px-3 py-2 rounded-md mr-2"
+      handleClick={async () =>
+        fanoutData.data && distributeShare(fanoutData.data, i)
+      }
+    >
+      Now!
+    </AsyncButton></div>
+    )}      </ul>
+    </div>
+    
+  </div>
+
+
+        
         </div>
       </main>
     </div>

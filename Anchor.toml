@@ -1,10 +1,12 @@
 [features]
 seeds = false
 [programs.localnet]
-update_metadata = "5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"
+upgrad00r = "84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"
 
 [programs.devnet]
-update_metadata = "5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"
+upgrad00r = "84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"
+[programs.mainnet]
+upgrad00r = "84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"
 [registry]
 url = "https://anchor.projectserum.com"
 

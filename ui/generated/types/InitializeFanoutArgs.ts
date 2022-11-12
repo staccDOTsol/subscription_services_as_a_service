@@ -13,6 +13,8 @@ export type InitializeFanoutArgs = {
   nativeAccountBumpSeed: number
   name: string
   totalShares: beet.bignum
+  shares: beet.bignum[]
+  traitOptions: string[]
   mint: web3.PublicKey
 }
 
@@ -27,6 +29,8 @@ export const initializeFanoutArgsBeet =
       ['nativeAccountBumpSeed', beet.u8],
       ['name', beet.utf8String],
       ['totalShares', beet.u64],
+      ['shares', beet.array(beet.u64)],
+      ['traitOptions', beet.array(beet.utf8String)],
       ['mint', beetSolana.publicKey],
     ],
     'InitializeFanoutArgs'

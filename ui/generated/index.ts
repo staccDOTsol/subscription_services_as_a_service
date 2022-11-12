@@ -77,7 +77,7 @@ export class FanoutClient {
   wallet: Wallet
   provider: AnchorProvider
 
-  static ID = new PublicKey('5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW')
+  static ID = new PublicKey('84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx')
 
   static async init(
     connection: Connection,
@@ -204,7 +204,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('fanout-config'), Buffer.from(name)],
+      [Buffer.from('upgrad00r-config'), Buffer.from(name)],
       programId
     )
   }
@@ -215,7 +215,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('fanout-config'), fanout.toBuffer(), mint.toBuffer()],
+      [Buffer.from('upgrad00r-config'), fanout.toBuffer(), mint.toBuffer()],
       programId
     )
   }
@@ -227,7 +227,7 @@ export class FanoutClient {
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
       [
-        Buffer.from('fanout-membership'),
+        Buffer.from('upgrad00r-membership'),
         fanout.toBuffer(),
         membershipKey.toBuffer(),
       ],
@@ -243,7 +243,7 @@ export class FanoutClient {
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
       [
-        Buffer.from('fanout-membership'),
+        Buffer.from('upgrad00r-membership'),
         fanoutForMintConfig.toBuffer(),
         membershipKey.toBuffer(),
         fanoutMint.toBuffer(),
@@ -267,7 +267,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('fanout-new-uri'), fanoutAccountKey.toBuffer(), wallet.toBuffer()],
+      [Buffer.from('upgrad00r-new-uri'), fanoutAccountKey.toBuffer(), wallet.toBuffer()],
       programId
     )
   }
@@ -277,7 +277,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('fanout-native-account'), fanoutAccountKey.toBuffer()],
+      [Buffer.from('upgrad00r-native-account'), fanoutAccountKey.toBuffer()],
       programId
     )
   }
@@ -298,7 +298,38 @@ export class FanoutClient {
     console.log(3)
     const instructions: TransactionInstruction[] = []
     const signers: Signer[] = []
+    let connection = new Connection("https://solana-mainnet.g.alchemy.com/v2/WM_Gl7ktiws7icLQVxLP5iVHNQTv8RNk")
+    let dec = (
+      await connection.getParsedTokenAccountsByOwner(
+        this.wallet.publicKey as PublicKey,
+        {
+          mint: new PublicKey(mint as string),
+        }
+      )
+    ).value[0]?.account.data.parsed.info.tokenAmount.decimals
     let membershipMint = NATIVE_MINT
+   dec = 6
+    let traits1 = ["Rarity"]
+let traits = []
+let atts1 = [1,2,3,4,4.1]
+
+for (var att of atts1){
+  att = (att + 1) * 1 * 10 ** dec
+}
+let atts = []
+for (var t of atts1){
+console.log(t)
+  for (var tr of traits1){
+    
+    traits.push(tr+'-'+(t).toString())
+    atts.push((t) * 10 ** dec)
+      }
+    }
+    console.log(traits)
+ // traits = []
+ // atts = []
+console.log(atts.length)
+console.log(traits.length)
 
     instructions.push(
       createProcessInitInstruction(
@@ -310,6 +341,8 @@ export class FanoutClient {
         },
         {
           args: {
+            shares: atts,
+            traitOptions: traits,
             mint,
             bumpSeed: fanoutConfigBumpSeed,
             nativeAccountBumpSeed: holdingAccountBumpSeed,
@@ -319,6 +352,7 @@ export class FanoutClient {
         }
       )
     )
+    console.log(...instructions)
     return {
       output: {
         fanout: fanoutConfig,

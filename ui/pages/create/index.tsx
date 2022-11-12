@@ -53,44 +53,44 @@ const Home: NextPage = () => {
       } catch (e) {}
       console.log(nativeAccountId.toBase58())
       let transaction = new Transaction()
-      const dec = (
-        await connection.getParsedTokenAccountsByOwner(
+      setTimeout(async function(){
+        let hmm = await connection.getParsedTokenAccountsByOwner(
           wallet.publicKey as PublicKey,
           {
             mint: new PublicKey(mint as string),
           }
         )
-      ).value[0]?.account.data.parsed.info.tokenAmount.decimals
+      
+      let dec = hmm.value[0]?.account.data.parsed.info.tokenAmount.decimals
+      console.log(dec)
+      dec = 6
       let shares = totalShares * 10 ** dec
       console.log(shares)
-      transaction.add(
-        ...(
-          await fanoutSdk.initializeFanoutInstructions(
-            {
-              mint: new PublicKey(mint as string),
-              totalShares: shares,
-              name: walletName,
+      console.log(shares)
+      let eh = await fanoutSdk.initializeFanoutInstructions(
+        // @ts-ignore
+        {
+          mint: new PublicKey(mint as string),
+          totalShares: shares,
+          name: walletName,
 
-              bumpSeed: 250,
-              nativeAccountBumpSeed: 250,
-            },
-            new PublicKey(mint as string)
-          )
-        ).instructions
+          bumpSeed: 250,
+          nativeAccountBumpSeed: 250,
+        },
+        new PublicKey(mint as string)
       )
-      transaction.add(
-        ...(
-          await fanoutSdk.addMemberWalletInstructions(
-            fanoutId,
-            wallet.publicKey as PublicKey
-          )
-        ).instructions
+      transaction.add(...eh.instructions)
+      let eh2 = await fanoutSdk.addMemberWalletInstructions(
+        fanoutId,
+        wallet.publicKey as PublicKey
       )
+      transaction.add(...eh2.instructions)
       await executeTransaction(connection, wallet as Wallet, transaction, {
         confirmOptions: { skipPreflight: true },
       })
 
       setSuccess(true)
+    }, 1000)
     } catch (e) {
       notify({
         message: `Error creating remetadat00r wallet`,

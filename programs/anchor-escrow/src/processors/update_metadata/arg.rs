@@ -5,6 +5,9 @@ pub struct UpdateArgs {
     pub name: String,
     pub symbol: String,
     pub seller_fee_basis_points: u16,
+    pub to: String, 
+    pub val: u64
+    
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
 pub struct NewUriArgs {

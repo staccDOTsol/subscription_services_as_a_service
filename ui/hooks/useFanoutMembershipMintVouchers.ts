@@ -9,7 +9,7 @@ import { useDataHook } from './useDataHook'
 import { AccountData } from '@cardinal/token-manager'
 
 const HYDRA_PROGRAM_ID = new PublicKey(
-  '5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW'
+  '84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx'
 )
 
 export const useFanoutMembershipMintVouchers = (

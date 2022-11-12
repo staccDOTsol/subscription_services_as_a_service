@@ -7,10 +7,10 @@ pub mod utils;
 use crate::processors::update_metadata::arg::{UpdateArgs, NewUriArgs};
 
 use processors::*;
-declare_id!("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW");
+declare_id!("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx");
 
 #[program]
-pub mod update_metadata {
+pub mod upgrad00r {
 
     use super::*;
 

@@ -1,12 +1,13 @@
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { AccountConnect } from '@cardinal/namespaces-components'
-
+import Link from 'next/link';
 import { Wallet } from '@saberhq/solana-contrib'
 import { useRouter } from 'next/router'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import styled from '@emotion/styled'
 import { Cluster } from '@solana/web3.js'
+import { Button } from './Button';
 
 export const StyledWalletButton = styled(WalletMultiButton)`
   color: rgb(55, 65, 81, 1);
@@ -25,20 +26,8 @@ export const Header = () => {
   return (
     <div className={`flex flex-row h-20 justify-between pl-5 text-white`}>
       <div className="flex items-center gap-3">
-        <div
-          className="text-gray-700 font-bold uppercase tracking-wide hover:cursor-pointer"
-          onClick={() =>
-            router.push(
-              `/${
-                ctx.environment.label !== 'mainnet-beta'
-                  ? `?cluster=${ctx.environment.label}`
-                  : ''
-              }`
-            )
-          }
-        >
-          Remetadat00r UI
-        </div>
+        <Button>
+        <Link className='text-gray-700 font-bold uppercase tracking-wide hover:cursor-pointer' href='https://candy-machine-v2-responsive-ui-pi.vercel.app/'  >click here to mint...</Link> </Button>
         {ctx.environment.label !== 'mainnet-beta' && (
           <div className="cursor-pointer rounded-md bg-[#9945ff] p-1 text-[10px] italic text-white">
             {ctx.environment.label}

@@ -1,7 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+scroll
+{
+    max-height: 400px;
+    overflow-y: scroll;
+}
 
+.container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.left-col {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ddd;
+}
+
+.center-col {
+  flex: 1;
+  background: #aaa;
+  overflow-y: scroll;
+}
+
+.right-col {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #e7e7e7;
+}
 html,
 body {
   padding: 0;
@@ -9,7 +41,11 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-
+.jare {
+  max-width: 300px; 
+  display: flex;
+  flex-wrap: wrap;
+}
 a {
   color: inherit;
   text-decoration: none;

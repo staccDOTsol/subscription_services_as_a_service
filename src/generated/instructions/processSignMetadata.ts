@@ -89,7 +89,7 @@ export const processSignMetadataInstructionDiscriminator = [
 export function createProcessSignMetadataInstruction(
   accounts: ProcessSignMetadataInstructionAccounts,
   args: ProcessSignMetadataInstructionArgs,
-  programId = new web3.PublicKey('5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW')
+  programId = new web3.PublicKey('84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx')
 ) {
   const [data] = processSignMetadataStruct.serialize({
     instructionDiscriminator: processSignMetadataInstructionDiscriminator,

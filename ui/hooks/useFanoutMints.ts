@@ -13,7 +13,7 @@ import * as splToken from '@solana/spl-token'
 import { shortPubKey } from 'common/utils'
 
 export const HYDRA_PROGRAM_ID = new PublicKey(
-  '5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW'
+  '84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx'
 )
 
 export type FanoutMintData = {

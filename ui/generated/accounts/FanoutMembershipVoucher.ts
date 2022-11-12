@@ -99,7 +99,7 @@ export class FanoutMembershipVoucher implements FanoutMembershipVoucherArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW'
+      '84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(

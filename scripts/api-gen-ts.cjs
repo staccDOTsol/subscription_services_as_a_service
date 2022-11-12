@@ -8,7 +8,7 @@ const { Solita } = require('@metaplex-foundation/solita');
 const { writeFile } = require('fs/promises');
 
 const PROGRAM_NAME = 'update_metadata';
-const PROGRAM_ID = '5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW';
+const PROGRAM_ID = '84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx';
 
 const programDir = path.join(__dirname,  '..', 'programs/anchor-escrow');
 const cargoToml = path.join(programDir, 'Cargo.toml')

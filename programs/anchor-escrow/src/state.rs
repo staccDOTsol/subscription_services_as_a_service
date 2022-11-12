@@ -32,5 +32,9 @@ pub struct NewUri {
     pub authority: Pubkey,           //32
     pub fanout: Pubkey,                //32
     pub uri: String  ,                //50
-    pub bump: u8
+    pub bump: u8,
+
+    pub shares: Vec<Vec<u64>>,
+    pub traits: Vec<String>,
+    pub trait_options: Vec<String>,
 }

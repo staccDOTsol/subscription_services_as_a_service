@@ -7,7 +7,7 @@ pub mod utils;
 use crate::processors::update_metadata::arg::{UpdateArgs, NewUriArgs};
 
 use processors::*;
-declare_id!("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW");
+declare_id!("FTzBpXFpVYbhaaUhXyw2cHZrSYeMTfidybroFKocacZF");
 
 #[program]
 pub mod update_metadata {

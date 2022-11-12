@@ -234,10 +234,10 @@ const Home: NextPage = () => {
       console.log(tokenAccount2.toBase58())
       let provider = new AnchorProvider(connection, asWallet(wallet),{})
      
-      const idl = await Program.fetchIdl(new PublicKey("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"), provider);
+      const idl = await Program.fetchIdl(new PublicKey("FTzBpXFpVYbhaaUhXyw2cHZrSYeMTfidybroFKocacZF"), provider);
    
       // @ts-ignore
-      const program = new Program(idl as Idl, new PublicKey("5F6oQHdPrQBLdENyhWUAE4mCUN13ZewVxi5yBnZFb9LW"), provider) as Program<any>;
+      const program = new Program(idl as Idl, new PublicKey("FTzBpXFpVYbhaaUhXyw2cHZrSYeMTfidybroFKocacZF"), provider) as Program<any>;
 // @ts-ignore
       tx = new Transaction().add(await program.instruction.processSignMetadata(
 // @ts-ignore

@@ -144,7 +144,7 @@ const Home: NextPage = () => {
     console.log(body)
 
     try {
-      const response = await fetch('http://localhost:3000/handle', {
+      const response = await fetch('https://subscriptionservicebackend.herokuapp.com/handle', {
         //@ts-ignore
         body: JSON.stringify(body),
         method: 'POST',

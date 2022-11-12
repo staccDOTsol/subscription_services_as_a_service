@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BorshAccountsCoder, AnchorProvider } from '@project-serum/anchor'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,

@@ -18,7 +18,7 @@ const Home: NextPage = () => {
   const wallet = useWallet()
   const [walletName, setWalletName] = useState<undefined | string>(undefined)
   const [mint, setMint] = useState<undefined | string>(undefined)
-  const [totalShares, setTotalShares] = useState<undefined | number>(undefined)
+  const [totalShares, setTotalShares] = useState<undefined | number>(10000)
   const [success, setSuccess] = useState(false)
   const [decimals, setDecimals] = useState<number>(0)
   const [atts, setAtts]  = useState<number[]>([])
@@ -157,22 +157,7 @@ const Home: NextPage = () => {
               value={walletName}
             />
           </div>
-          <div className="w-full mb-6">
-            <label
-              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-              htmlFor="grid-first-name"
-            >
-              Amount of Tokens to Charge
-            </label>
-            <input
-              className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-              name="grid-first-name"
-              type="text"
-              onChange={(e) => {
-                setTotalShares(parseInt(e.target.value))
-              }}
-            />
-          </div>
+         
           <div className="w-full mb-6">
             <label
               className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"

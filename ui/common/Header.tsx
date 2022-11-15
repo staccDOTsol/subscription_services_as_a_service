@@ -26,13 +26,14 @@ export const Header = () => {
   return (
     <div className={`flex flex-row h-20 justify-between pl-5 text-white`}>
       <div className="flex items-center gap-3">
-        <Button>
+        <Button variant="primary">
         <Link className='text-gray-700 font-bold uppercase tracking-wide hover:cursor-pointer' href='https://candy-machine-v2-responsive-ui-pi.vercel.app/'  >click here to mint...</Link> </Button>
         {ctx.environment.label !== 'mainnet-beta' && (
           <div className="cursor-pointer rounded-md bg-[#9945ff] p-1 text-[10px] italic text-white">
             {ctx.environment.label}
           </div>
         )}
+        
       </div>
 
       <div className="relative my-auto flex items-center pr-8 align-middle">

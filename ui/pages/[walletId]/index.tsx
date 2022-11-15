@@ -179,7 +179,7 @@ console.log(fanoutData.data?.nativeAccount.toBase58())
 
   async function uploadFile(file: any, fanout: any, authority: any, val: any, to:any): Promise<any> {
   
-    const body = ({nft: file, fanout, who: wallet.publicKey,val:val.toNumber(), to})
+    const body = ({nft: file, fanout, who: wallet.publicKey,val:val.toNumber(), to, environment })
     console.log(body)
 
     try {
@@ -424,7 +424,7 @@ console.log(hmm)
       <span>:D</span>
       <ul>
       {state && ttypes && state.traitOptions.map((t: string, i: number ) => 
-    <div className='scroll' > Upgrade your {t.split('-')[0]} to {t.split('-')[1]} for {state.shares[i].toNumber() / 10 ** (dec as number)} tokenz
+    <div className='scroll' key={i}> Upgrade your {t.split('-')[0]} to {t.split('-')[1]} for {state.shares[i].toNumber() / 10 ** (dec as number)} tokenz
     <AsyncButton
       type="button"
       variant="primary"

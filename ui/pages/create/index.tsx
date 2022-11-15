@@ -210,7 +210,7 @@ const Home: NextPage = () => {
               className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
               htmlFor="grid-first-name"
             >
-              Enter the traits that you would like to charge to update with.. this is an array so it'll look like trait1,trait2
+              Enter the traits that you would like to charge to update with.. this is an array so it&apos;ll look like trait1,trait2
             </label>
             <label 
               className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"

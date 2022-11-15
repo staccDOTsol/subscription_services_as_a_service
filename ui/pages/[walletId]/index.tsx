@@ -71,14 +71,7 @@ const Home: NextPage = () => {
  useEffect(() => {
   setTimeout(async function(){
 
- setDec ((
-  await connection.getParsedTokenAccountsByOwner(
-    wallet.publicKey as PublicKey,
-    {
-      mint: new PublicKey( fanoutData.data?.fanout.mint as PublicKey),
-    }
-  )
-).value[0]?.account.data.parsed.info.tokenAmount.decimals)
+ 
 setDec(6)
 if (wallet && wallet.publicKey && fanoutData.data?.fanoutId) {
   const fanoutSdk = new FanoutClient(connection, asWallet(wallet!))

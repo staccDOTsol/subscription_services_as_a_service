@@ -59,17 +59,8 @@ const Home: NextPage = () => {
       console.log(nativeAccountId.toBase58())
       let transaction = new Transaction()
       setTimeout(async function(){
-        let hmm = await connection.getParsedTokenAccountsByOwner(
-          wallet.publicKey as PublicKey,
-          {
-            mint: new PublicKey(mint as string),
-          }
-        )
       
-      let dec = hmm.value[0]?.account.data.parsed.info.tokenAmount.decimals
-      console.log(dec)
-      dec = 6
-      let shares = totalShares * 10 ** dec
+      let shares = totalShares * 10 ** decimals
       console.log(shares)
       console.log(shares)
       let eh = await fanoutSdk.initializeFanoutInstructions(

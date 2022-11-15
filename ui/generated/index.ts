@@ -309,12 +309,11 @@ for (var att of atts1){
   att = (att) * 10 ** dec
   atts.push(att)
 }
-for (var t of atts1){
+for (var t of opts.descs){
 console.log(t)
   for (var tr of traits1){
     
     traits.push(tr+'-'+(t).toString())
-    atts.push((t) * 10 ** dec)
       }
     }
     console.log(traits)

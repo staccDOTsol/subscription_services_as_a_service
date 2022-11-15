@@ -22,7 +22,8 @@ const Home: NextPage = () => {
   const [success, setSuccess] = useState(false)
   const [decimals, setDecimals] = useState<number>(0)
   const [atts, setAtts]  = useState<number[]>([])
-  const [traits, setTraits] = useState< string []>(["start_date", "end_date"])
+  const [traits, setTraits] = useState< string []>(["end_date"])
+  const [descs, setDescs] = useState< string []>(["end_date"])
   const [remetadat00rWalletMembers, setRemetadat00rWalletMembers] = useState<
     { memberKey?: string; shares?: number }[]
   >([{ memberKey: undefined, shares: undefined }])
@@ -77,6 +78,7 @@ const Home: NextPage = () => {
           decimals,
           traits,
           atts,
+          descs,
           mint: new PublicKey(mint as string),
           totalShares: shares,
           name: walletName,
@@ -228,7 +230,24 @@ const Home: NextPage = () => {
               className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
               htmlFor="grid-first-name"
             >
-              In the same order as above, enter the amount in your tokens to charge for each trait, as, say, 1000,2000,5000. Remember dev takes a 1.38% fee.
+              Enter the descriptions for these traits
+            </label>
+           
+            <input
+              className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+              name="grid-first-name"
+              type="text"
+              onChange={(e) => {
+                setDescs(e.target.value.split(','))
+              }}
+            />
+          </div>
+          <div className="w-full mb-6">
+            <label
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            >
+              In the same order as above, enter the amount in your tokens to charge for each trait, as, say, 1000,2000,5000.
             </label>
             <label 
               className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"

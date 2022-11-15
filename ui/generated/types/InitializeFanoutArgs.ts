@@ -11,6 +11,7 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
 export type InitializeFanoutArgs = {
   bumpSeed: number
   traits: string []
+  descs: string []
   atts: number []
   decimals: number
   nativeAccountBumpSeed: number

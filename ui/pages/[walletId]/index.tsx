@@ -424,7 +424,7 @@ console.log(hmm)
       <span>:D</span>
       <ul>
       {state && ttypes && state.traitOptions.map((t: string, i: number ) => 
-    <div className='scroll' > Upgrade your {t.split('-')[0]} to {t.split('-')[1]} for {state.shares[i].toNumber() / 10 ** (dec as number)} USDC
+    <div className='scroll' > Upgrade your {t.split('-')[0]} to {t.split('-')[1]} for {state.shares[i].toNumber() / 10 ** (dec as number)} tokenz
     <AsyncButton
       type="button"
       variant="primary"

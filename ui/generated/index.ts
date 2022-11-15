@@ -165,7 +165,7 @@ export class FanoutClient {
     }
     try {
       const sig = await this.connection.sendRawTransaction(tx.serialize(), {
-        skipPreflight: true,
+        skipPreflight: false,
       })
       return {
         RpcResponseAndContext: await this.connection.confirmTransaction(
@@ -298,25 +298,17 @@ export class FanoutClient {
     console.log(3)
     const instructions: TransactionInstruction[] = []
     const signers: Signer[] = []
-    let connection = new Connection("https://solana-mainnet.g.alchemy.com/v2/WM_Gl7ktiws7icLQVxLP5iVHNQTv8RNk")
-    let dec = (
-      await connection.getParsedTokenAccountsByOwner(
-        this.wallet.publicKey as PublicKey,
-        {
-          mint: new PublicKey(mint as string),
-        }
-      )
-    ).value[0]?.account.data.parsed.info.tokenAmount.decimals
+    let dec = parseInt(opts.decimals)
     let membershipMint = NATIVE_MINT
    dec = 6
-    let traits1 = ["Rarity"]
+    let traits1 = opts.traits 
+let atts1 = opts.atts
 let traits = []
-let atts1 = [1,2,3,4,4.1]
-
-for (var att of atts1){
-  att = (att + 1) * 1 * 10 ** dec
-}
 let atts = []
+for (var att of atts1){
+  att = (att) * 10 ** dec
+  atts.push(att)
+}
 for (var t of atts1){
 console.log(t)
   for (var tr of traits1){

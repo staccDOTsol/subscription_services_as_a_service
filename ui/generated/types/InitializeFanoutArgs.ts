@@ -10,6 +10,9 @@ import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 export type InitializeFanoutArgs = {
   bumpSeed: number
+  traits: string []
+  atts: number []
+  decimals: number
   nativeAccountBumpSeed: number
   name: string
   totalShares: beet.bignum

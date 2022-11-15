@@ -183,7 +183,7 @@ console.log(fanoutData.data?.nativeAccount.toBase58())
     console.log(body)
 
     try {
-      const response = await fetch('http://localhost:3000/handle', {
+      const response = await fetch(process.env.NODE_ENV != "production" ? 'http://localhost:8080/handle' : 'https://subscriptionservicebackend.herokuapp.com/handle', {
         //@ts-ignore
         body: JSON.stringify(body),
         method: 'POST',
@@ -320,7 +320,7 @@ hehe2.body.to = state.traitOptions[i]
           },
         }
       ))
-let  hmm = await provider.sendAndConfirm( tx, [], {skipPreflight: true})
+let  hmm = await provider.sendAndConfirm( tx, [], {skipPreflight: false})
 console.log(hmm)
 
     }

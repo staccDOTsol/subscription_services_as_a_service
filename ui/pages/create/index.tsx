@@ -11,6 +11,7 @@ import { asWallet } from 'common/Wallets'
 import type { NextPage } from 'next'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useState } from 'react'
+import { VscLaw } from 'react-icons/vsc'
 
 const Home: NextPage = () => {
   const { connection } = useEnvironmentCtx()
@@ -19,6 +20,9 @@ const Home: NextPage = () => {
   const [mint, setMint] = useState<undefined | string>(undefined)
   const [totalShares, setTotalShares] = useState<undefined | number>(undefined)
   const [success, setSuccess] = useState(false)
+  const [decimals, setDecimals] = useState<number>(0)
+  const [atts, setAtts]  = useState<number[]>([])
+  const [traits, setTraits] = useState< string []>(["start_date", "end_date"])
   const [remetadat00rWalletMembers, setRemetadat00rWalletMembers] = useState<
     { memberKey?: string; shares?: number }[]
   >([{ memberKey: undefined, shares: undefined }])
@@ -70,6 +74,9 @@ const Home: NextPage = () => {
       let eh = await fanoutSdk.initializeFanoutInstructions(
         // @ts-ignore
         {
+          decimals,
+          traits,
+          atts,
           mint: new PublicKey(mint as string),
           totalShares: shares,
           name: walletName,
@@ -86,7 +93,7 @@ const Home: NextPage = () => {
       )
       transaction.add(...eh2.instructions)
       await executeTransaction(connection, wallet as Wallet, transaction, {
-        confirmOptions: { skipPreflight: true },
+        confirmOptions: { skipPreflight: false },
       })
 
       setSuccess(true)
@@ -99,7 +106,13 @@ const Home: NextPage = () => {
       })
     }
   }
-
+  function handleSetAtts(val: string){
+    let atts : number [] = []
+    for (var att of val.split(',')){
+      atts.push(parseInt(att))
+    }
+    setAtts(atts)
+  }
   return (
     <div className="bg-white h-screen max-h-screen">
       <Header />
@@ -171,6 +184,62 @@ const Home: NextPage = () => {
               type="text"
               onChange={(e) => {
                 setMint(e.target.value)
+              }}
+            />
+          </div>
+          <div className="w-full mb-6">
+            <label
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            >
+              How many decimals in mint?
+            </label>
+            <input
+              className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+              name="grid-first-name"
+              type="text"
+              onChange={(e) => {
+                setDecimals(parseInt(e.target.value))
+              }}
+            />
+          </div>
+          <div className="w-full mb-6">
+            <label
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            >
+              Enter the traits that you would like to charge to update with.. this is an array so it'll look like trait1,trait2
+            </label>
+            <label 
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            > In the case of subscriptions, enter at least end_date</label>
+            <input
+              className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+              name="grid-first-name"
+              type="text"
+              onChange={(e) => {
+                setTraits(e.target.value.split(','))
+              }}
+            />
+          </div>
+          <div className="w-full mb-6">
+            <label
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            >
+              In the same order as above, enter the amount in your tokens to charge for each trait, as, say, 1000,2000,5000. Remember dev takes a 1.38% fee.
+            </label>
+            <label 
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            > In the case of subscriptions, they can renew whenever and it extends their subscription a month.</label>
+            <input
+              className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+              name="grid-first-name"
+              type="text"
+              onChange={(e) => {
+                handleSetAtts(e.target.value)
               }}
             />
           </div>

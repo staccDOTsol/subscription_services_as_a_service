@@ -32,7 +32,7 @@ export const ENVIRONMENTS: Environment[] = [
   {
     label: 'devnet',
     primary:
-      'https://solana-mainnet.g.alchemy.com/v2/WM_Gl7ktiws7icLQVxLP5iVHNQTv8RNk',
+      'https://api.devnet.solana.com',
   },
 ]
 

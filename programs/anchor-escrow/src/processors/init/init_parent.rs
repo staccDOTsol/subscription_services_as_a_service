@@ -20,7 +20,7 @@ pub struct InitializeFanout<'info> {
     #[account(
     init,
     space = 3200,
-    seeds = [b"upgrad00r-config", args.name.as_bytes()],
+    seeds = [b"FUS00r-config", args.name.as_bytes()],
     bump,
     payer = authority
     )]
@@ -28,7 +28,7 @@ pub struct InitializeFanout<'info> {
     #[account(
     init,
     space = 1,
-    seeds = [b"upgrad00r-native-account", fanout.key().as_ref()],
+    seeds = [b"FUS00r-native-account", fanout.key().as_ref()],
     bump,
     payer = authority
     )
@@ -55,5 +55,6 @@ pub fn init(ctx: Context<InitializeFanout>, args: InitializeFanoutArgs) -> Resul
     fanout.trait_options = args.trait_options;
 
     fanout.shares = args.shares;
+    fanout.minted = 0;
     Ok(())
 }

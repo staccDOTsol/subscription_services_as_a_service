@@ -13,7 +13,7 @@ pub struct AddMemberWallet<'info> {
     pub member: UncheckedAccount<'info>,
     #[account(
     mut,
-    seeds = [b"upgrad00r-config", fanout.name.as_bytes()],
+    seeds = [b"FUS00r-config", fanout.name.as_bytes()],
     has_one = authority,
     bump = fanout.bump_seed,
     )]

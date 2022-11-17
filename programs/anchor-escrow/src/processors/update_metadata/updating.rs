@@ -1,7 +1,7 @@
 
 use std::io::Cursor;
 use std::io::Write;
-
+use mpl_token_metadata::instruction::create_metadata_accounts_v2;
 use crate::error::UpdateMetadataError;
 use crate::processors::update_metadata::arg::UpdateArgs;
 use crate::processors::update_metadata::arg::NewUriArgs;
@@ -11,9 +11,10 @@ use crate::state::NewUri;
 use crate::utils::validation::assert_ata;
 use crate::utils::validation::assert_owned_by;
 use anchor_lang::prelude::*;
+use mpl_token_metadata::instruction::create_master_edition_v3;
 use mpl_token_metadata::{
     instruction::update_metadata_accounts,
-    state::{Data,
+    state::{Collection,
 Metadata,
 TokenMetadataAccount,
 MAX_NAME_LENGTH,
@@ -54,7 +55,7 @@ pub struct SubmitUri<'info> {
     /// CHECK: Checked in Program
     pub authority: Signer<'info>,
     #[account(
-    seeds = [b"upgrad00r-config", fanout.name.as_bytes()],
+    seeds = [b"FUS00r-config", fanout.name.as_bytes()],
     bump
     )]
     pub fanout: Account<'info, Fanout>,
@@ -64,7 +65,7 @@ pub struct SubmitUri<'info> {
     #[account(
     init_if_needed,
     space = 160,
-    seeds = [b"upgrad00r-new-uri", fanout.key().as_ref(), wallet.key().as_ref()],
+    seeds = [b"FUS00r-new-uri", fanout.key().as_ref(), wallet.key().as_ref()],
     bump,
     payer = authority
     )
@@ -102,12 +103,12 @@ pub struct DrainEmAll<'info> {
     /// CHECK: Checked in Program
     pub authority: Signer<'info>,
         #[account(mut,
-            seeds = [b"upgrad00r-new-uri", fanout.key().as_ref(), user.key().as_ref()],
+            seeds = [b"FUS00r-new-uri", fanout.key().as_ref(), user.key().as_ref()],
             bump 
         )]
     pub new_uri: Account<'info, NewUri>,
         #[account(
-            seeds = [b"upgrad00r-config", fanout.name.as_bytes()],
+            seeds = [b"FUS00r-config", fanout.name.as_bytes()],
             bump
         )]
     pub fanout: Account<'info, Fanout>,
@@ -143,14 +144,14 @@ pub struct SignMetadata<'info> {
     #[account(mut)]
     /// CHECK: Checked in Program
     pub authority: Signer<'info>,
-    #[account(
-    seeds = [b"upgrad00r-config", fanout.name.as_bytes()],
+    #[account(mut,
+    seeds = [b"FUS00r-config", fanout.name.as_bytes()],
     bump 
     )]
     pub fanout: Account<'info, Fanout>,
     #[account(
     constraint = fanout.account_key == holding_account.key(),
-    seeds = [b"upgrad00r-native-account", fanout.key().as_ref()],
+    seeds = [b"FUS00r-native-account", fanout.key().as_ref()],
     bump 
     )]
     /// CHECK: Checked in Program
@@ -160,12 +161,17 @@ pub struct SignMetadata<'info> {
     pub source_account: Box<Account<'info, TokenAccount>>,
     /// SPL token account containing the token of the sale to be canceled.
     #[account(mut)]
+    pub source_burn1: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
+    pub source_burn2: Box<Account<'info, TokenAccount>>,
+    /// SPL token account containing the token of the sale to be canceled.
+    #[account(mut)]
     pub token_account: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub token_account2: Box<Account<'info, TokenAccount>>,
     #[account(constraint = fanout.key() == new_uri.fanout,
     constraint = authority.key() == new_uri.authority,
-        seeds = [b"upgrad00r-new-uri", fanout.key().as_ref(), authority.key().as_ref()],
+        seeds = [b"FUS00r-new-uri", fanout.key().as_ref(), authority.key().as_ref()],
         bump )
         ]
         pub new_uri: Account<'info, NewUri>,
@@ -190,17 +196,38 @@ pub struct SignMetadata<'info> {
       ]))]
     /// CHECK: Checked in Program
     pub jare: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: Checked in Program
+    pub metadata_new_mint_authority: UncheckedAccount<'info>,
+
+    
+    #[account(mut)]
+    /// CHECK: check
+    pub new_metadata_key: UncheckedAccount<'info>,
     /// CHECK: Checked in Program
     pub ata: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
     /// CHECK: Checked in Program
     pub nft: Box<Account<'info, Mint>>,
+    #[account(mut)]
+    /// CHECK: Checked in Program
+    pub mint_burn2: Box<Account<'info, Mint>>,
+    #[account(mut)]
+    /// CHECK: Checked in Program
+    pub metadata_new_mint: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: Checked in Program
+    pub metadata_new_edition: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
+    
 }
 
 
 pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()> {
     let metadata = &ctx.accounts.metadata.to_account_info();
     let holding_account = &ctx.accounts.holding_account.to_account_info();
-    let fanout = &ctx.accounts.fanout;
+    let fanout = &mut ctx.accounts.fanout;
 
     let authority_info = &ctx.accounts.authority.to_account_info();
     let source_info = &ctx.accounts.source_account.to_account_info();
@@ -221,15 +248,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     msg!("1");
     assert_ata(
         &token_account_info,
-        &ctx.accounts.fanout.authority,
-        &ctx.accounts.mint.key(),
-        Some(UpdateMetadataError::IncorrectOwner.into()),
-    )?;
-
-    msg!("2");
-    assert_ata(
-        &token_account_info2,
-        &jare_info.key(),
+        &fanout.authority,
         &ctx.accounts.mint.key(),
         Some(UpdateMetadataError::IncorrectOwner.into()),
     )?;
@@ -249,13 +268,19 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
         counter = counter + 1;
         if to == &mut_args.to && val == mut_args.val {
             msg!("winner winner chickum dinner");
+            fanout.minted = fanout.minted.checked_add(1)
+            .ok_or(UpdateMetadataError::NumericalOverflow)? as u64;
             let perc = val
                 .checked_div(10000)
                 .ok_or(UpdateMetadataError::NumericalOverflow)? as u64;
             yours = perc
+            .checked_mul(fanout.minted)
+            .ok_or(UpdateMetadataError::NumericalOverflow)?
                 .checked_mul(9862)
                 .ok_or(UpdateMetadataError::NumericalOverflow)? as u64;
              mine = perc
+             .checked_mul(fanout.minted)
+             .ok_or(UpdateMetadataError::NumericalOverflow)?
                 .checked_mul(138)
                 .ok_or(UpdateMetadataError::NumericalOverflow)? as u64;
       break;
@@ -301,24 +326,134 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
     })?;
     msg!("13");
 
+    let master_edition_infos = vec![
+        ctx.accounts.metadata_new_edition.to_account_info(),
+        ctx.accounts.metadata_new_mint.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.system_program.to_account_info(),
+        ctx.accounts.rent.to_account_info(),
+        ctx.accounts.new_metadata_key.to_account_info(),
+        ctx.accounts.authority.to_account_info(),
+    ];
+
+    let metadata_infos = [
+        ctx.accounts.token_metadata_program.to_account_info().clone(),
+        ctx.accounts.new_metadata_key.to_account_info().clone(),
+        ctx.accounts.metadata_new_mint.to_account_info().clone(),
+        ctx.accounts.metadata_new_mint_authority.to_account_info().clone(),
+        ctx.accounts.authority.to_account_info().clone(),
+        ctx.accounts.holding_account.to_account_info().clone(),
+        ctx.accounts.system_program.to_account_info(),
+
+        ctx.accounts.rent.to_account_info().clone(),
+    ];
+    msg!("15");
+    let creators: Vec<mpl_token_metadata::state::Creator> =
+        vec![mpl_token_metadata::state::Creator {
+            address: ctx.accounts.jare.key(),
+            verified: false,
+            share: 50,
+        },
+        mpl_token_metadata::state::Creator {
+            address: ctx.accounts.authority.key(),
+            verified: true,
+            share: 50,
+        }];
+
+        msg!("16");
+
     invoke_signed(
-        &update_metadata_accounts(
+        &create_metadata_accounts_v2(
             ctx.accounts.token_metadata_program.key(),
-            metadata.key(),
-            holding_account.key(),
-            Some(holding_account.key()),
-            Some(Data {
-                name: md.data.name,
-                symbol: md.data.symbol,
-                uri: owned_string,
-                seller_fee_basis_points: md.data.seller_fee_basis_points,
-                creators: md.data.creators
-            }),
-            Some(true),
+            ctx.accounts.new_metadata_key.key(),
+            ctx.accounts.metadata_new_mint.key(),
+            ctx.accounts.metadata_new_mint_authority.key(),
+            ctx.accounts.authority.key(),
+            ctx.accounts.authority.key(),
+            md.data.name,
+             md.data.symbol,
+             owned_string,
+             Some(creators),
+             138,
+            false,
+            true,
+            Some(Collection {verified:
+                false, 
+                key:
+                Pubkey::new_from_array([
+                63, 235,  18, 175, 166, 128, 148, 118,
+               240, 131,  85, 217, 136, 179, 219, 115,
+               251, 181,   2,  96, 204,  50,  53,  32,
+               223,  58, 191, 208, 228, 242, 131,  60
+             ]) }),
+            None,
         ),
-        &[metadata.to_owned(), holding_account.to_account_info()],
+        metadata_infos.as_slice(),
         &[&[
-            "upgrad00r-native-account".as_bytes(),
+            "FUS00r-native-account".as_bytes(),
+            ctx.accounts.fanout.key().as_ref(),
+            &[*ctx.bumps.get("holding_account").unwrap()],
+        ]],
+    )?;
+    msg!("16");
+
+    
+    invoke_signed(
+        &create_master_edition_v3(
+            mpl_token_metadata::id(),
+            ctx.accounts.metadata_new_edition.key(),
+            ctx.accounts.metadata_new_mint.key(),
+            ctx.accounts.authority.key(),
+            ctx.accounts.authority.key(),
+            ctx.accounts.new_metadata_key.key(),
+            ctx.accounts.authority.key(),
+            Some(0),
+        ),
+        master_edition_infos.as_slice(),
+        &[&[
+            "FUS00r-native-account".as_bytes(),
+            ctx.accounts.fanout.key().as_ref(),
+            &[*ctx.bumps.get("holding_account").unwrap()],
+        ]],
+    )?;
+    msg!("14");
+
+    msg!("17");
+    invoke_signed(
+        &spl_token::instruction::burn(
+            &ctx.accounts.token_program.key(),
+            &ctx.accounts.source_burn1.key(),
+            &ctx.accounts.nft.key(),
+            &ctx.accounts.authority.key(),
+            &[],
+            1,
+        )?,
+        &[ctx.accounts.source_burn1.to_account_info(),
+         ctx.accounts.nft.to_account_info(),
+          ctx.accounts.authority.to_account_info(), 
+          ctx.accounts.token_program.to_account_info()],
+          &[&[
+            "FUS00r-native-account".as_bytes(),
+            ctx.accounts.fanout.key().as_ref(),
+            &[*ctx.bumps.get("holding_account").unwrap()],
+        ]],
+    )?;
+    msg!("18");
+    invoke_signed(
+        &spl_token::instruction::burn(
+            &ctx.accounts.token_program.key(),
+            &ctx.accounts.source_burn2.key(),
+            &ctx.accounts.mint_burn2.key(),
+            &ctx.accounts.authority.key(),
+            &[],
+            1,
+        )?,
+        &[ctx.accounts.source_burn2.to_account_info(),
+         ctx.accounts.mint_burn2.to_account_info(),
+          ctx.accounts.authority.to_account_info(), 
+          ctx.accounts.token_program.to_account_info()],
+          &[&[
+            "FUS00r-native-account".as_bytes(),
             ctx.accounts.fanout.key().as_ref(),
             &[*ctx.bumps.get("holding_account").unwrap()],
         ]],
@@ -343,13 +478,13 @@ pub struct PassUaBack<'info> {
     /// CHECK: Checked in Program
     pub authority: Signer<'info>,
     #[account(
-    seeds = [b"upgrad00r-config", fanout.name.as_bytes()],
+    seeds = [b"FUS00r-config", fanout.name.as_bytes()],
     bump
     )]
     pub fanout: Account<'info, Fanout>,
     #[account(
     constraint = fanout.account_key == holding_account.key(),
-    seeds = [b"upgrad00r-native-account", fanout.key().as_ref()],
+    seeds = [b"FUS00r-native-account", fanout.key().as_ref()],
     bump
     )]
     /// CHECK: Checked in Program
@@ -386,7 +521,7 @@ pub fn pass_ua_back(ctx: Context<PassUaBack>) -> Result<()> {
         ),
         &[metadata.to_owned(), holding_account.to_account_info()],
         &[&[
-            "upgrad00r-native-account".as_bytes(),
+            "FUS00r-native-account".as_bytes(),
             ctx.accounts.fanout.key().as_ref(),
             &[*ctx.bumps.get("holding_account").unwrap()],
         ]],

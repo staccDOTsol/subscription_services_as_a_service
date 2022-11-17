@@ -1,12 +1,12 @@
 [features]
 seeds = false
 [programs.localnet]
-upgrad00r = "84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"
+FUS00r = "GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"
 
 [programs.devnet]
-upgrad00r = "84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"
+FUS00r = "GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"
 [programs.mainnet]
-upgrad00r = "84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"
+FUS00r = "GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"
 [registry]
 url = "https://anchor.projectserum.com"
 

@@ -101,7 +101,7 @@ export class Fanout implements FanoutArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx'
+      'GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, fanoutBeet)

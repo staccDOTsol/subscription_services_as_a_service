@@ -35,6 +35,8 @@ import { connect } from 'http2'
 const Home: NextPage = () => {
   const router = useRouter()
   const [dec, setDec] = useState<number | undefined>()
+  const [prompt, setPrompt] = useState<string>("beautiful, ornate giant post-modern sphinx in the middle of dystopian time square")
+
   const [state, setState] = useState<any>()
   const [ttypes, setTtypes] = useState<any>()
   const [trange, setTrange] = useState<any>()
@@ -79,10 +81,10 @@ const [nativeAccountId] = await FanoutClient.nativeAccount(
 )
 let provider = new AnchorProvider(connection, asWallet(wallet),{})
 
-const idl = await Program.fetchIdl(new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider);
+const idl = await Program.fetchIdl(new PublicKey("GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"), provider);
 
 // @ts-ignore
-const program = new Program(idl as Idl, new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider) as Program<any>;
+const program = new Program(idl as Idl, new PublicKey("GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"), provider) as Program<any>;
 
 // @ts-ignore
 console.log(fanoutData.data.fanoutId.toBase58())
@@ -171,7 +173,7 @@ console.log(fanoutData.data?.nativeAccount.toBase58())
 
   async function uploadFile(file: any, fanout: any, authority: any, val: any, to:any): Promise<any> {
   console.log(environment.label)
-    const body = ({nft: file, fanout, who: wallet.publicKey,val:val.toNumber(), to, environment })
+    const body = ({nft: file, fanout, who: wallet.publicKey,val:val.toNumber(), to, environment, prompt })
     console.log(body)
 
     try {
@@ -218,10 +220,10 @@ console.log(fanoutData.data?.nativeAccount.toBase58())
       )
       let provider = new AnchorProvider(connection, asWallet(wallet),{})
      
-      const idl = await Program.fetchIdl(new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider);
+      const idl = await Program.fetchIdl(new PublicKey("GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"), provider);
    
       // @ts-ignore
-      const program = new Program(idl as Idl, new PublicKey("84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx"), provider) as Program<any>;
+      const program = new Program(idl as Idl, new PublicKey("GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM"), provider) as Program<any>;
 
   // @ts-ignore
 console.log(fanoutData.fanoutId.toBase58())
@@ -415,9 +417,27 @@ console.log(hmm)
                   {(fanoutData.data?.nativeAccount.toBase58())}
                 </a>
               </p>
-      <ul>
+      <ul><form className="w-full max-w-lg">
+          <div className="w-full mb-6">
+            <label
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-first-name"
+            >
+              Prompt?
+            </label>
+            <input
+              className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+              name="grid-first-name"
+              type="text"
+              placeholder="Set your prompt..."
+              onChange={(e) => {
+                setPrompt(e.target.value)
+              }}
+            />
+          </div>
+          </form>
       {state && ttypes && state.traitOptions.map((t: string, i: number ) => 
-    <div className='scroll' key={i}> Upgrade your {t.split('-')[0]} to {t.split('-')[1]} for {state.shares[i].toNumber() / 10 ** (dec as number)} tokenz
+    <div className='scroll' key={i}> Doit...
     <AsyncButton
       type="button"
       variant="primary"

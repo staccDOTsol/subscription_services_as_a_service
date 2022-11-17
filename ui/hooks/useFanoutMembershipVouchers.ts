@@ -9,7 +9,7 @@ import { AccountData } from '@cardinal/token-manager'
 import { FanoutMembershipVoucher } from '../generated'
 
 const HYDRA_PROGRAM_ID = new PublicKey(
-  '84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx'
+  'GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM'
 )
 
 export const useFanoutMembershipVouchers = () => {

@@ -54,7 +54,7 @@ export const processPassUaBackInstructionDiscriminator = [
  */
 export function createProcessPassUaBackInstruction(
   accounts: ProcessPassUaBackInstructionAccounts,
-  programId = new web3.PublicKey('84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx')
+  programId = new web3.PublicKey('GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM')
 ) {
   const [data] = processPassUaBackStruct.serialize({
     instructionDiscriminator: processPassUaBackInstructionDiscriminator,

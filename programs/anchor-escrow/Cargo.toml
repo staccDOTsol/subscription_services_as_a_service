@@ -6,7 +6,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "upgrad00r"
+name = "FUS00r"
 
 [features]
 no-entrypoint = []

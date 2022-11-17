@@ -80,14 +80,10 @@ const Home: NextPage = () => {
         new PublicKey(mint as string)
       )
       transaction.add(...eh.instructions)
-      await executeTransaction(connection, wallet as Wallet, transaction, {
-        confirmOptions: { skipPreflight: true },
-      })
       let eh2 = await fanoutSdk.addMemberWalletInstructions(
         fanoutId,
         wallet.publicKey as PublicKey
       )
-      transaction = new Transaction()
       transaction.add(...eh2.instructions)
       await executeTransaction(connection, wallet as Wallet, transaction, {
         confirmOptions: { skipPreflight: false },

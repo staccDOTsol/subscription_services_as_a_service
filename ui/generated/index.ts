@@ -77,7 +77,7 @@ export class FanoutClient {
   wallet: Wallet
   provider: AnchorProvider
 
-  static ID = new PublicKey('84zHEoSwTo6pb259RtmeYQ5KNStik8pib815q7reZjdx')
+  static ID = new PublicKey('GR8qnkCuwBM3aLkAdMQyy3n6NacecPha7xhwkmLEVNBM')
 
   static async init(
     connection: Connection,
@@ -204,7 +204,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('upgrad00r-config'), Buffer.from(name)],
+      [Buffer.from('FUS00r-config'), Buffer.from(name)],
       programId
     )
   }
@@ -215,7 +215,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('upgrad00r-config'), fanout.toBuffer(), mint.toBuffer()],
+      [Buffer.from('FUS00r-config'), fanout.toBuffer(), mint.toBuffer()],
       programId
     )
   }
@@ -227,7 +227,7 @@ export class FanoutClient {
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
       [
-        Buffer.from('upgrad00r-membership'),
+        Buffer.from('FUS00r-membership'),
         fanout.toBuffer(),
         membershipKey.toBuffer(),
       ],
@@ -243,7 +243,7 @@ export class FanoutClient {
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
       [
-        Buffer.from('upgrad00r-membership'),
+        Buffer.from('FUS00r-membership'),
         fanoutForMintConfig.toBuffer(),
         membershipKey.toBuffer(),
         fanoutMint.toBuffer(),
@@ -267,7 +267,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('upgrad00r-new-uri'), fanoutAccountKey.toBuffer(), wallet.toBuffer()],
+      [Buffer.from('FUS00r-new-uri'), fanoutAccountKey.toBuffer(), wallet.toBuffer()],
       programId
     )
   }
@@ -277,7 +277,7 @@ export class FanoutClient {
     programId: PublicKey = FanoutClient.ID
   ): Promise<[PublicKey, number]> {
     return await PublicKey.findProgramAddress(
-      [Buffer.from('upgrad00r-native-account'), fanoutAccountKey.toBuffer()],
+      [Buffer.from('FUS00r-native-account'), fanoutAccountKey.toBuffer()],
       programId
     )
   }

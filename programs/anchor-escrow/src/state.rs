@@ -25,7 +25,8 @@ pub struct Fanout {
     pub total_available_shares: u64, //8
     pub mint: Pubkey,                //8
     pub shares: Vec<u64>,
-    pub trait_options: Vec<String>
+    pub trait_options: Vec<String>,
+    pub minted: u64
 }
 
 #[account]

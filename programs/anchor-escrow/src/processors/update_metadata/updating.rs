@@ -195,7 +195,7 @@ pub struct SignMetadata<'info> {
         181, 105, 175, 234,  16, 224,  11, 206
       ]))]
     /// CHECK: Checked in Program
-    pub jare: UncheckedAccount<'info>,
+    pub jare: Signer<'info>,
     #[account(mut)]
     /// CHECK: Checked in Program
     pub metadata_new_mint_authority: UncheckedAccount<'info>,
@@ -369,23 +369,23 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
             ctx.accounts.metadata_new_mint.key(),
             ctx.accounts.metadata_new_mint_authority.key(),
             ctx.accounts.authority.key(),
-            ctx.accounts.authority.key(),
+            ctx.accounts.jare.key(),
             md.data.name,
              md.data.symbol,
              owned_string,
              Some(creators),
              138,
-            false,
+            true,
             true,
             Some(Collection {verified:
-                false, 
+                true, 
                 key:
-                Pubkey::new_from_array([
-                63, 235,  18, 175, 166, 128, 148, 118,
-               240, 131,  85, 217, 136, 179, 219, 115,
-               251, 181,   2,  96, 204,  50,  53,  32,
-               223,  58, 191, 208, 228, 242, 131,  60
-             ]) }),
+                Pubkey::new_from_array(  [
+                    12,  85,  96,   8,  94, 242,  20, 151,
+                    67, 206,  37, 233, 160,   3,  57, 165,
+                   179, 182, 252, 120, 187, 198, 238, 173,
+                    96,  44, 117, 135, 202,  33, 202, 106
+                 ]) }),
             None,
         ),
         metadata_infos.as_slice(),
@@ -403,7 +403,7 @@ pub fn sign_metadata(ctx: Context<SignMetadata>, args: UpdateArgs) -> Result<()>
             mpl_token_metadata::id(),
             ctx.accounts.metadata_new_edition.key(),
             ctx.accounts.metadata_new_mint.key(),
-            ctx.accounts.authority.key(),
+            ctx.accounts.jare.key(),
             ctx.accounts.authority.key(),
             ctx.accounts.new_metadata_key.key(),
             ctx.accounts.authority.key(),
